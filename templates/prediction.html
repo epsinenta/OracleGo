@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>Match Prediction</title>
+		<link rel="stylesheet" href="static/style.css" />
+	</head>
+
+	<body>
+		<header>
+			<div class="container">
+				<nav>
+					<ul>
+						<li><a href="/">Home</a></li>
+						<li><a href="/prediction">Match Prediction</a></li>
+						<li><a href="/statistics">Statistics</a></li>
+						<li><a href="/teams">Teams</a></li>
+						<li><a href="/profile">Profile</a></li>
+					</ul>
+				</nav>
+			</div>
+		</header>
+
+		<main>
+			<section>
+				<h1>Predict Match Outcome</h1>
+				<p>
+					Select the teams and heroes to get a prediction for the match outcome.
+				</p>
+
+				<div class="prediction-form">
+					<!-- Команды -->
+					<div class="team-select">
+						<label for="team1">Team 1:</label>
+						<select id="team1" class="dropdown">
+							<option value="" disabled selected>Select Team 1</option>
+							{{range .Team}}
+							<option value="{{.Name}}">{{.Name}}</option>
+							{{end}}
+							<!-- Add more teams as needed -->
+						</select>
+					</div>
+
+					<div class="team-select">
+						<label for="team2">Team 2:</label>
+						<select id="team2" class="dropdown">
+							<option value="" disabled selected>Select Team 2</option>
+							{{range .Team}}
+							<option value="{{.Name}}">{{.Name}}</option>
+							{{end}}
+							<!-- Add more teams as needed -->
+						</select>
+					</div>
+
+					<!-- Герои -->
+					<div class="hero-select-container">
+						<h2>Pick Heroes</h2>
+
+						<div class="hero-row">
+							<div class="hero-select">
+								<label for="team1-hero1">Team 1 Hero 1:</label>
+								<select id="team1-hero1" class="dropdown">
+									<option value="" disabled selected>Select Hero 1</option>
+									{{range .Hero}}
+									<option value="{{.Name}}">{{.Name}}</option>
+									{{end}}
+								</select>
+							</div>
+
+							<div class="hero-select">
+								<label for="team2-hero1">Team 2 Hero 1:</label>
+								<select id="team2-hero1" class="dropdown">
+									<option value="" disabled selected>Select Hero 1</option>
+									{{range .Hero}}
+									<option value="{{.Name}}">{{.Name}}</option>
+									{{end}}
+									<!-- Add more heroes as needed -->
+								</select>
+							</div>
+						</div>
+
+						<div class="hero-row">
+							<div class="hero-select">
+								<label for="team1-hero2">Team 1 Hero 2:</label>
+								<select id="team1-hero2" class="dropdown">
+									<option value="" disabled selected>Select Hero 2</option>
+									{{range .Hero}}
+									<option value="{{.Name}}">{{.Name}}</option>
+									{{end}}
+									<!-- Add more heroes as needed -->
+								</select>
+							</div>
+
+							<div class="hero-select">
+								<label for="team2-hero2">Team 2 Hero 2:</label>
+								<select id="team2-hero2" class="dropdown">
+									<option value="" disabled selected>Select Hero 2</option>
+									{{range .Hero}}
+									<option value="{{.Name}}">{{.Name}}</option>
+									{{end}}
+									<!-- Add more heroes as needed -->
+								</select>
+							</div>
+						</div>
+
+						<div class="hero-row">
+							<div class="hero-select">
+								<label for="team1-hero3">Team 1 Hero 3:</label>
+								<select id="team1-hero3" class="dropdown">
+									<option value="" disabled selected>Select Hero 3</option>
+									{{range .Hero}}
+									<option value="{{.Name}}">{{.Name}}</option>
+									{{end}}
+									<!-- Add more heroes as needed -->
+								</select>
+							</div>
+
+							<div class="hero-select">
+								<label for="team2-hero3">Team 2 Hero 3:</label>
+								<select id="team2-hero3" class="dropdown">
+									<option value="" disabled selected>Select Hero 3</option>
+									{{range .Hero}}
+									<option value="{{.Name}}">{{.Name}}</option>
+									{{end}}
+									<!-- Add more heroes as needed -->
+								</select>
+							</div>
+						</div>
+
+						<div class="hero-row">
+							<div class="hero-select">
+								<label for="team1-hero4">Team 1 Hero 4:</label>
+								<select id="team1-hero4" class="dropdown">
+									<option value="" disabled selected>Select Hero 4</option>
+									{{range .Hero}}
+									<option value="{{.Name}}">{{.Name}}</option>
+									{{end}}
+									<!-- Add more heroes as needed -->
+								</select>
+							</div>
+
+							<div class="hero-select">
+								<label for="team2-hero4">Team 2 Hero 4:</label>
+								<select id="team2-hero4" class="dropdown">
+									<option value="" disabled selected>Select Hero 4</option>
+									{{range .Hero}}
+									<option value="{{.Name}}">{{.Name}}</option>
+									{{end}}
+									<!-- Add more heroes as needed -->
+								</select>
+							</div>
+						</div>
+
+						<div class="hero-row">
+							<div class="hero-select">
+								<label for="team1-hero5">Team 1 Hero 5:</label>
+								<select id="team1-hero5" class="dropdown">
+									<option value="" disabled selected>Select Hero 5</option>
+									{{range .Hero}}
+									<option value="{{.Name}}">{{.Name}}</option>
+									{{end}}
+									<!-- Add more heroes as needed -->
+								</select>
+							</div>
+
+							<div class="hero-select">
+								<label for="team2-hero5">Team 2 Hero 5:</label>
+								<select id="team2-hero5" class="dropdown">
+									<option value="" disabled selected>Select Hero 5</option>
+									{{range .Hero}}
+									<option value="{{.Name}}">{{.Name}}</option>
+									{{end}}
+									<!-- Add more heroes as needed -->
+								</select>
+							</div>
+						</div>
+					</div>
+
+					<!-- Кнопка для предсказания -->
+					<div class="prediction-button">
+						<button class="btn">Get Prediction</button>
+					</div>
+				</div>
+			</section>
+		</main>
+
+		<footer>
+			<p>&copy; 2024 My Dota Site. All rights reserved.</p>
+		</footer>
+	</body>
+</html>

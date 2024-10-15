@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>Dota2 Match Prediction - Statistics</title>
+		<link rel="stylesheet" href="/static/style.css" />
+	</head>
+	<body>
+		<header>
+			<nav>
+				<ul>
+					<li><a href="/">Home</a></li>
+					<li><a href="/prediction">Match Prediction</a></li>
+					<li><a href="/statistics">Statistics</a></li>
+					<li><a href="/profile">User Profile</a></li>
+					<li><a href="/team-analysis">Team Analysis</a></li>
+					<li><a href="/recommendations">Hero Recommendations</a></li>
+				</ul>
+			</nav>
+		</header>
+
+		<main>
+			<section class="statistics">
+				<h1>Statistics & Analytics</h1>
+				<h2>Hero Winrates</h2>
+				<table>
+					<thead>
+						<tr>
+							<th>Patch</th>
+							<th>Hero</th>
+							<th>Winrate</th>
+						</tr>
+					</thead>
+					<tbody>
+						{{range .HeroPerPatch}}
+						<tr>
+							<td>{{.Patch}}</td>
+							<td>{{.Name}}</td>
+							<td>{{.Winrate}}%</td>
+						</tr>
+						{{end}}
+					</tbody>
+				</table>
+			</section>
+		</main>
+
+		<footer>
+			<p>&copy; 2024 Dota2 Match Prediction</p>
+		</footer>
+	</body>
+</html>
