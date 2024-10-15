@@ -1,7 +1,7 @@
 package main
 
 import (
-	"OracleGo/db"
+	"OracleGo/internal/db"
 	"fmt"
 	_ "fmt"
 	"html/template"
@@ -18,7 +18,7 @@ func main() {
 	http.HandleFunc("/recommendations", RecommendationsHandler)
 
 	// Статические файлы
-	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("./static/"))))
+	http.Handle("/web/static/", http.StripPrefix("/web/static/", http.FileServer(http.Dir("./web/static/"))))
 
 	log.Println("Server started on :8080")
 	log.Fatal(http.ListenAndServe(":8080", nil))
@@ -62,7 +62,7 @@ func PredictionHandler(w http.ResponseWriter, r *http.Request) {
 	for _, row := range teamsRows {
 		teams = append(teams, Team{row[0]})
 	}
-	parsedTemplate, err := template.ParseFiles("templates/prediction.html")
+	parsedTemplate, err := template.ParseFiles("web/templates/prediction.html")
 	if err != nil {
 		log.Fatalf("Ошибка при парсинге шаблона: %v", err)
 	}
@@ -88,7 +88,7 @@ func StatisticsHandler(w http.ResponseWriter, r *http.Request) {
 	for _, row := range resultRows {
 		heroes = append(heroes, HeroPerPatch{row[0], row[1], row[2]})
 	}
-	parsedTemplate, err := template.ParseFiles("templates/statistics.html")
+	parsedTemplate, err := template.ParseFiles("web/templates/statistics.html")
 	if err != nil {
 		log.Fatalf("Ошибка при парсинге шаблона: %v", err)
 	}
@@ -108,6 +108,6 @@ func RecommendationsHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func renderTemplate(w http.ResponseWriter, tmpl string) {
-	parsedTemplate, _ := template.ParseFiles("templates/" + tmpl)
+	parsedTemplate, _ := template.ParseFiles("web/templates/" + tmpl)
 	parsedTemplate.Execute(w, nil)
 }

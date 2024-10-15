@@ -3,8 +3,8 @@
 	<head>
 		<meta charset="UTF-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-		<title>Dota2 Match Prediction - Statistics</title>
-		<link rel="stylesheet" href="/static/style.css" />
+		<title>Hero Recommendations</title>
+		<link rel="stylesheet" href="/web/static/style.css" />
 	</head>
 	<body>
 		<header>
@@ -21,27 +21,23 @@
 		</header>
 
 		<main>
-			<section class="statistics">
-				<h1>Statistics & Analytics</h1>
-				<h2>Hero Winrates</h2>
-				<table>
-					<thead>
-						<tr>
-							<th>Patch</th>
-							<th>Hero</th>
-							<th>Winrate</th>
-						</tr>
-					</thead>
-					<tbody>
-						{{range .HeroPerPatch}}
-						<tr>
-							<td>{{.Patch}}</td>
-							<td>{{.Name}}</td>
-							<td>{{.Winrate}}%</td>
-						</tr>
-						{{end}}
-					</tbody>
-				</table>
+			<section class="hero-recommendations">
+				<h1>Hero Recommendations</h1>
+				<h2>Recommended Picks</h2>
+				<ul>
+					<li>
+						Pick 1: Phantom Assassin - Strong against current enemy heroes.
+					</li>
+					<li>Pick 2: Lion - Provides needed disable and burst.</li>
+					<!-- Добавь больше рекомендаций -->
+				</ul>
+
+				<h2>Counter Picks</h2>
+				<ul>
+					<li>
+						Counter Pick: Nyx Assassin - Excellent against enemy spellcasters.
+					</li>
+				</ul>
 			</section>
 		</main>
 
