@@ -10,6 +10,7 @@ import (
 )
 
 func main() {
+
 	http.HandleFunc("/", HomeHandler)
 	http.HandleFunc("/prediction", PredictionHandler)
 	http.HandleFunc("/statistics", StatisticsHandler)
@@ -28,16 +29,9 @@ func HomeHandler(w http.ResponseWriter, r *http.Request) {
 	renderTemplate(w, "home.html")
 }
 
-type Hero struct {
-	Name string
-}
-type Team struct {
-	Name string
-}
-
 type PageData struct {
-	Hero []Hero
-	Team []Team
+	Hero []db.Hero
+	Team []db.Team
 }
 
 func PredictionHandler(w http.ResponseWriter, r *http.Request) {
@@ -49,18 +43,18 @@ func PredictionHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Fatalf("Не удалось провести запрос %v", err)
 	}
-	var heroes []Hero
+	var heroes []db.Hero
 	for _, row := range heroesRows {
-		heroes = append(heroes, Hero{row[0]})
+		heroes = append(heroes, db.Hero{row[0]})
 	}
 	teamsRows, err := dbManager.GetRows("teams_roasters", []string{"team_name"}, map[string][]string{})
 	if err != nil {
 		log.Fatalf("Не удалось провести запрос %v", err)
 	}
 	fmt.Print(teamsRows)
-	var teams []Team
+	var teams []db.Team
 	for _, row := range teamsRows {
-		teams = append(teams, Team{row[0]})
+		teams = append(teams, db.Team{row[0]})
 	}
 	parsedTemplate, err := template.ParseFiles("web/templates/prediction.html")
 	if err != nil {
