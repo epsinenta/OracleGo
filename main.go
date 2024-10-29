@@ -2,6 +2,7 @@ package main
 
 import (
 	"OracleGo/internal/db"
+	"OracleGo/internal/handlers"
 	"fmt"
 	_ "fmt"
 	"html/template"
@@ -12,13 +13,16 @@ import (
 func main() {
 
 	http.HandleFunc("/", HomeHandler)
+
+	http.Handle("/login", handlers.RedirectIfAuthenticated(http.HandlerFunc(handlers.LoginHandler)))
+	http.Handle("/register", handlers.RedirectIfAuthenticated(http.HandlerFunc(handlers.RegisterHandler)))
+	http.Handle("/profile", handlers.SessionMiddleware(http.HandlerFunc(ProfileHandler)))
+
 	http.HandleFunc("/prediction", PredictionHandler)
 	http.HandleFunc("/statistics", StatisticsHandler)
-	http.HandleFunc("/profile", ProfileHandler)
 	http.HandleFunc("/teams", TeamAnalysisHandler)
 	http.HandleFunc("/recommendations", RecommendationsHandler)
 
-	// Статические файлы
 	http.Handle("/web/static/", http.StripPrefix("/web/static/", http.FileServer(http.Dir("./web/static/"))))
 
 	log.Println("Server started on :8080")
@@ -88,7 +92,12 @@ func StatisticsHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	parsedTemplate.Execute(w, struct{ HeroPerPatch []HeroPerPatch }{heroes})
 }
-
+func LoginHandler(w http.ResponseWriter, r *http.Request) {
+	renderTemplate(w, "login.html")
+}
+func RegisterHandler(w http.ResponseWriter, r *http.Request) {
+	renderTemplate(w, "register.html")
+}
 func ProfileHandler(w http.ResponseWriter, r *http.Request) {
 	renderTemplate(w, "profile.html")
 }

@@ -3,7 +3,7 @@
 	<head>
 		<meta charset="UTF-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-		<title>Hero Recommendations</title>
+		<title>Login</title>
 		<link rel="stylesheet" href="/web/static/style.css" />
 	</head>
 	<body>
@@ -25,30 +25,23 @@
 				</ul>
 			</nav>
 		</header>
-
 		<main>
-			<section class="hero-recommendations">
-				<h1>Hero Recommendations</h1>
-				<h2>Recommended Picks</h2>
-				<ul>
-					<li>
-						Pick 1: Phantom Assassin - Strong against current enemy heroes.
-					</li>
-					<li>Pick 2: Lion - Provides needed disable and burst.</li>
-					<!-- Добавь больше рекомендаций -->
-				</ul>
+			<section class="form-container">
+				<form action="/login" method="POST">
+					<label for="email">Email</label>
+					<input type="email" id="email" name="email" required />
 
-				<h2>Counter Picks</h2>
-				<ul>
-					<li>
-						Counter Pick: Nyx Assassin - Excellent against enemy spellcasters.
-					</li>
-				</ul>
+					<label for="password">Password</label>
+					<input type="password" id="password" name="password" required />
+
+					<button type="submit" class="btn-submit">Login</button>
+				</form>
+				<p>Don't have an account? <a href="/register">Register here</a></p>
+
+				{{if .ErrorMessage}}
+				<div class="error-message">{{.ErrorMessage}}</div>
+				{{end}}
 			</section>
 		</main>
-
-		<footer>
-			<p>&copy; 2024 Dota2 Match Prediction</p>
-		</footer>
 	</body>
 </html>

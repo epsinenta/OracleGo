@@ -38,7 +38,7 @@ func (teamsDbManager *TeamsDatabaseManager) GetTeamsRoastersList() ([]TeamRoaste
 	}
 	var result []TeamRoaster
 	for _, row := range teamsRows {
-		result = append(result, TeamRoaster{Team: Team{Name: row[0]}, Players: []Player{{row[1]}, {row[2]}, {row[3]}, {row[4]}, {row[5]}}})
+		result = append(result, TeamRoaster{Team: Team{Value: row[0]}, Players: []Player{{row[1]}, {row[2]}, {row[3]}, {row[4]}, {row[5]}}})
 	}
 	return result, nil
 }

@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>Register</title>
+		<link rel="stylesheet" href="/web/static/style.css" />
+	</head>
+	<body>
+		<header class="page-header">
+			<nav>
+				<ul>
+					<li><a href="/">Home</a></li>
+					<li><a href="/prediction">Match Prediction</a></li>
+					<li><a href="/statistics">Statistics</a></li>
+					<li><a href="/team-analysis">Team Analysis</a></li>
+					<li><a href="/recommendations">Hero Recommendations</a></li>
+
+					{{if .IsLoggedIn}}
+					<li><a class="btn-profile" href="/profile">Profile</a></li>
+					{{else}}
+					<li><a class="btn-login" href="/login">Login</a></li>
+					<li><a class="btn-register" href="/register">Register</a></li>
+					{{end}}
+				</ul>
+			</nav>
+		</header>
+		<main>
+			<section class="form-container">
+				<form action="/register" method="POST">
+					<div class="form-group">
+						<label for="email">Email</label>
+						<input type="email" id="email" name="email" required />
+					</div>
+
+					<div class="form-group">
+						<label for="password">Password</label>
+						<input type="password" id="password" name="password" required />
+					</div>
+
+					<div class="form-group">
+						<label for="confirm-password">Confirm Password</label>
+						<input
+							type="password"
+							id="confirm-password"
+							name="confirm-password"
+							required
+						/>
+					</div>
+
+					<button type="submit" class="btn-submit">Register</button>
+				</form>
+				<p class="alt-option">
+					Already have an account? <a href="/login">Log in</a>
+				</p>
+				{{if .ErrorMessage}}
+				<div class="error-message">{{.ErrorMessage}}</div>
+				{{end}}
+			</section>
+		</main>
+	</body>
+</html>

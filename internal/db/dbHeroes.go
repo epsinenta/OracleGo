@@ -42,7 +42,7 @@ func (heroesDbManager *HeroesDatabaseManager) GetAllHeroesWinrates() ([]Winrate,
 }
 
 func (heroesDbManager *HeroesDatabaseManager) GetHeroesWinrates(heroes []Hero) ([]Winrate, error) {
-	heroesNames := NamesFromAny(heroes)
+	heroesNames := ValuesFromAny(heroes)
 	winratesRows, err := heroesDbManager.dbManager.GetRows("heroes_list", []string{"winrate", "hero_name"}, map[string][]string{"patch": {"7.35c"}, "hero_name": heroesNames})
 	if err != nil {
 		log.Fatalf("Не удалось провести запрос %v", err)
@@ -61,8 +61,8 @@ func (heroesDbManager *HeroesDatabaseManager) GetHeroesWinrates(heroes []Hero) (
 }
 
 func (heroesDbManager *HeroesDatabaseManager) GetHeroesCounterPicks(firstHeroes []Hero, secondHeroes []Hero) ([]CounterRate, error) {
-	firstHeroesNames := NamesFromAny(firstHeroes)
-	secondHeroesNames := NamesFromAny(secondHeroes)
+	firstHeroesNames := ValuesFromAny(firstHeroes)
+	secondHeroesNames := ValuesFromAny(secondHeroes)
 	var result []CounterRate
 	for _, firstHero := range firstHeroesNames {
 		multiFirstHero := strings.Split(strings.Repeat(firstHero+" ", len(secondHeroes)), " ")[:len(secondHeroes)]

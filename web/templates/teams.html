@@ -13,9 +13,15 @@
 					<li><a href="/">Home</a></li>
 					<li><a href="/prediction">Match Prediction</a></li>
 					<li><a href="/statistics">Statistics</a></li>
-					<li><a href="/profile">User Profile</a></li>
 					<li><a href="/team-analysis">Team Analysis</a></li>
 					<li><a href="/recommendations">Hero Recommendations</a></li>
+
+					{{if .IsLoggedIn}}
+					<li><a class="btn-profile" href="/profile">Profile</a></li>
+					{{else}}
+					<li><a class="btn-login" href="/login">Login</a></li>
+					<li><a class="btn-register" href="/register">Register</a></li>
+					{{end}}
 				</ul>
 			</nav>
 		</header>

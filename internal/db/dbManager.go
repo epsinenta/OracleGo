@@ -88,3 +88,37 @@ func (dbManager *DatabaseManager) GetRows(tableName string, params []string, arg
 
 	return result, nil
 }
+
+func (dbManager *DatabaseManager) AddRows(tableName string, args map[string][]string) error {
+	columns := make([]string, 0, len(args))
+	for col := range args {
+		columns = append(columns, col)
+	}
+
+	numRows := len(args[columns[0]])
+	for _, values := range args {
+		if len(values) != numRows {
+			return fmt.Errorf("mismatched number of values in columns")
+		}
+	}
+
+	query := fmt.Sprintf("INSERT INTO %s (%s) VALUES ", tableName, strings.Join(columns, ", "))
+
+	values := make([]string, 0, numRows)
+	for i := 0; i < numRows; i++ {
+		rowValues := make([]string, len(columns))
+		for j, col := range columns {
+			rowValues[j] = fmt.Sprintf("'%s'", args[col][i])
+		}
+		values = append(values, fmt.Sprintf("(%s)", strings.Join(rowValues, ", ")))
+	}
+
+	query += strings.Join(values, ", ")
+
+	_, err := dbManager.db.Exec(query)
+	if err != nil {
+		return fmt.Errorf("error inserting rows: %v", err)
+	}
+
+	return nil
+}
