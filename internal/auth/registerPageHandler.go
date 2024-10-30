@@ -1,7 +1,7 @@
-package handlers
+package auth
 
 import (
-	"OracleGo/internal/auth"
+	"OracleGo/internal/net"
 	_ "fmt"
 	"net/http"
 )
@@ -13,7 +13,7 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 		email := r.FormValue("email")
 		inputPassword := r.FormValue("password")
 		confirmPassword := r.FormValue("confirm-password")
-		isCreateUser := auth.AddUser(email, inputPassword, confirmPassword)
+		isCreateUser := AddUser(email, inputPassword, confirmPassword)
 		if isCreateUser {
 			http.Redirect(w, r, "/login", http.StatusSeeOther)
 
@@ -22,5 +22,5 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	renderTemplate(w, r, "register.html", data)
+	net.RenderTemplate(w, r, "register.html", data)
 }

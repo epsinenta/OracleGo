@@ -1,6 +1,7 @@
-package db
+package statistics
 
 import (
+	"OracleGo/internal/db"
 	_ "fmt"
 	"log"
 	"strconv"
@@ -8,12 +9,32 @@ import (
 	_ "github.com/lib/pq"
 )
 
+type Player struct {
+	Value string
+}
+
+func (p Player) GetValue() string {
+	return p.Value
+}
+
 type PlayersDatabaseManager struct {
-	dbManager DatabaseManager
+	dbManager db.DatabaseManager
+}
+
+type GamesCount struct {
+	Player Player
+	Hero   Hero
+	Count  int
+}
+
+type PlayerWinrate struct {
+	Player  Player
+	Hero    Hero
+	Winrate float64
 }
 
 func NewPlayersDatabaseManager() (*PlayersDatabaseManager, error) {
-	dbManager, err := NewDatabaseManager()
+	dbManager, err := db.NewDatabaseManager()
 	if err != nil {
 		return nil, err
 	}
@@ -21,8 +42,8 @@ func NewPlayersDatabaseManager() (*PlayersDatabaseManager, error) {
 }
 
 func (playersDbManager *PlayersDatabaseManager) GetPlayerOnHeroWinrate(players []Player, heroes []Hero) ([]PlayerWinrate, error) {
-	playerNames := ValuesFromAny(players)
-	heroesNames := ValuesFromAny(heroes)
+	playerNames := db.ValuesFromAny(players)
+	heroesNames := db.ValuesFromAny(heroes)
 	winrateRows, err := playersDbManager.dbManager.GetRows("players_heroes_statistics", []string{"winrate", "player_name", "hero_name"}, map[string][]string{"player_name": playerNames, "hero_name": heroesNames})
 	if err != nil {
 		log.Fatalf("Не удалось провести запрос %v", err)
@@ -40,8 +61,8 @@ func (playersDbManager *PlayersDatabaseManager) GetPlayerOnHeroWinrate(players [
 }
 
 func (playersDbManager *PlayersDatabaseManager) GetPlayerCountOnHero(players []Player, heroes []Hero) ([]GamesCount, error) {
-	playerNames := ValuesFromAny(players)
-	heroesNames := ValuesFromAny(heroes)
+	playerNames := db.ValuesFromAny(players)
+	heroesNames := db.ValuesFromAny(heroes)
 	winrateRows, err := playersDbManager.dbManager.GetRows("players_heroes_statistics", []string{"count_of_matches", "player_name", "hero_name"}, map[string][]string{"player_name": playerNames, "hero_name": heroesNames})
 	if err != nil {
 		log.Fatalf("Не удалось провести запрос %v", err)

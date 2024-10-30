@@ -1,6 +1,7 @@
-package db
+package statistics
 
 import (
+	"OracleGo/internal/db"
 	_ "fmt"
 	"log"
 	"strconv"
@@ -9,12 +10,31 @@ import (
 	_ "github.com/lib/pq"
 )
 
+type Hero struct {
+	Value string
+}
+
+func (h Hero) GetValue() string {
+	return h.Value
+}
+
+type Winrate struct {
+	Hero    Hero
+	Winrate float64
+}
+
+type CounterRate struct {
+	FirstHero   Hero
+	SecondHero  Hero
+	CounterPick float64
+}
+
 type HeroesDatabaseManager struct {
-	dbManager DatabaseManager
+	dbManager db.DatabaseManager
 }
 
 func NewHeroesDatabaseManager() (*HeroesDatabaseManager, error) {
-	dbManager, err := NewDatabaseManager()
+	dbManager, err := db.NewDatabaseManager()
 	if err != nil {
 		return nil, err
 	}
@@ -42,7 +62,7 @@ func (heroesDbManager *HeroesDatabaseManager) GetAllHeroesWinrates() ([]Winrate,
 }
 
 func (heroesDbManager *HeroesDatabaseManager) GetHeroesWinrates(heroes []Hero) ([]Winrate, error) {
-	heroesNames := ValuesFromAny(heroes)
+	heroesNames := db.ValuesFromAny(heroes)
 	winratesRows, err := heroesDbManager.dbManager.GetRows("heroes_list", []string{"winrate", "hero_name"}, map[string][]string{"patch": {"7.35c"}, "hero_name": heroesNames})
 	if err != nil {
 		log.Fatalf("Не удалось провести запрос %v", err)
@@ -61,8 +81,8 @@ func (heroesDbManager *HeroesDatabaseManager) GetHeroesWinrates(heroes []Hero) (
 }
 
 func (heroesDbManager *HeroesDatabaseManager) GetHeroesCounterPicks(firstHeroes []Hero, secondHeroes []Hero) ([]CounterRate, error) {
-	firstHeroesNames := ValuesFromAny(firstHeroes)
-	secondHeroesNames := ValuesFromAny(secondHeroes)
+	firstHeroesNames := db.ValuesFromAny(firstHeroes)
+	secondHeroesNames := db.ValuesFromAny(secondHeroes)
 	var result []CounterRate
 	for _, firstHero := range firstHeroesNames {
 		multiFirstHero := strings.Split(strings.Repeat(firstHero+" ", len(secondHeroes)), " ")[:len(secondHeroes)]

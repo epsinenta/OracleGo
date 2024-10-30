@@ -1,18 +1,32 @@
-package db
+package statistics
 
 import (
+	"OracleGo/internal/db"
 	_ "fmt"
 	"log"
 
 	_ "github.com/lib/pq"
 )
 
+type Team struct {
+	Value string
+}
+
+func (t Team) GetValue() string {
+	return t.Value
+}
+
+type TeamRoaster struct {
+	Players []Player
+	Team    Team
+}
+
 type TeamsDatabaseManager struct {
-	dbManager DatabaseManager
+	dbManager db.DatabaseManager
 }
 
 func NewTeamsDatabaseManager() (*TeamsDatabaseManager, error) {
-	dbManager, err := NewDatabaseManager()
+	dbManager, err := db.NewDatabaseManager()
 	if err != nil {
 		return nil, err
 	}

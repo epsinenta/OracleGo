@@ -1,7 +1,6 @@
 package auth
 
 import (
-	"OracleGo/internal/db"
 	"log"
 
 	"golang.org/x/crypto/bcrypt"
@@ -20,13 +19,13 @@ func checkPassword(hashedPassword, password string) bool {
 	return err == nil
 }
 
-func findUser(email string) (db.User, error) {
-	userManager, err := db.NewUsersDatabaseManager()
+func findUser(email string) (User, error) {
+	userManager, err := NewUsersDatabaseManager()
 	if err != nil {
 		log.Fatalf("Не удалось создать DataBaseManager: %v", err)
 	}
 
-	return userManager.GetUser(db.Email{email})
+	return userManager.GetUser(Email{email})
 }
 
 func ValidateUser(email string, password string) bool {
@@ -39,7 +38,7 @@ func ValidateUser(email string, password string) bool {
 		return false
 	}
 
-	if (gettenUser.Email != db.Email{Value: email}) || !checkPassword(gettenUser.Password.GetValue(), password) {
+	if (gettenUser.Email != Email{Value: email}) || !checkPassword(gettenUser.Password.GetValue(), password) {
 
 		return false
 	}

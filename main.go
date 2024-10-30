@@ -1,116 +1,30 @@
 package main
 
 import (
-	"OracleGo/internal/db"
-	"OracleGo/internal/handlers"
-	"fmt"
+	"OracleGo/internal/auth"
+	"OracleGo/internal/home"
+	"OracleGo/internal/ml"
+	"OracleGo/internal/net"
+	"OracleGo/internal/profile"
+	"OracleGo/internal/statistics"
 	_ "fmt"
-	"html/template"
 	"log"
 	"net/http"
 )
 
 func main() {
 
-	http.HandleFunc("/", HomeHandler)
+	http.HandleFunc("/", home.HomeHandler)
 
-	http.Handle("/login", handlers.RedirectIfAuthenticated(http.HandlerFunc(handlers.LoginHandler)))
-	http.Handle("/register", handlers.RedirectIfAuthenticated(http.HandlerFunc(handlers.RegisterHandler)))
-	http.Handle("/profile", handlers.SessionMiddleware(http.HandlerFunc(ProfileHandler)))
+	http.Handle("/login", net.RedirectIfAuthenticated(http.HandlerFunc(auth.LoginHandler)))
+	http.Handle("/register", net.RedirectIfAuthenticated(http.HandlerFunc(auth.RegisterHandler)))
+	http.Handle("/profile", net.SessionMiddleware(http.HandlerFunc(profile.ProfileHandler)))
 
-	http.HandleFunc("/prediction", PredictionHandler)
-	http.HandleFunc("/statistics", StatisticsHandler)
-	http.HandleFunc("/teams", TeamAnalysisHandler)
-	http.HandleFunc("/recommendations", RecommendationsHandler)
-
-	http.Handle("/web/static/", http.StripPrefix("/web/static/", http.FileServer(http.Dir("./web/static/"))))
+	http.HandleFunc("/prediction", ml.PredictionHandler)
+	http.HandleFunc("/recommendations", ml.RecommendationsHandler)
+	http.HandleFunc("/statistics", statistics.StatisticsHandler)
+	http.HandleFunc("/team-analysis", statistics.TeamsHandler)
 
 	log.Println("Server started on :8080")
 	log.Fatal(http.ListenAndServe(":8080", nil))
-}
-
-func HomeHandler(w http.ResponseWriter, r *http.Request) {
-	renderTemplate(w, "home.html")
-}
-
-type PageData struct {
-	Hero []db.Hero
-	Team []db.Team
-}
-
-func PredictionHandler(w http.ResponseWriter, r *http.Request) {
-	dbManager, err := db.NewDatabaseManager()
-	if err != nil {
-		log.Fatalf("Не удалось создать DataBaseManager: %v", err)
-	}
-	heroesRows, err := dbManager.GetRows("heroes_list", []string{"hero_name"}, map[string][]string{"patch": {"7.35c"}})
-	if err != nil {
-		log.Fatalf("Не удалось провести запрос %v", err)
-	}
-	var heroes []db.Hero
-	for _, row := range heroesRows {
-		heroes = append(heroes, db.Hero{row[0]})
-	}
-	teamsRows, err := dbManager.GetRows("teams_roasters", []string{"team_name"}, map[string][]string{})
-	if err != nil {
-		log.Fatalf("Не удалось провести запрос %v", err)
-	}
-	fmt.Print(teamsRows)
-	var teams []db.Team
-	for _, row := range teamsRows {
-		teams = append(teams, db.Team{row[0]})
-	}
-	parsedTemplate, err := template.ParseFiles("web/templates/prediction.html")
-	if err != nil {
-		log.Fatalf("Ошибка при парсинге шаблона: %v", err)
-	}
-	parsedTemplate.Execute(w, PageData{Hero: heroes, Team: teams})
-}
-
-type HeroPerPatch struct {
-	Patch   string
-	Name    string
-	Winrate string
-}
-
-func StatisticsHandler(w http.ResponseWriter, r *http.Request) {
-	dbManager, err := db.NewDatabaseManager()
-	if err != nil {
-		log.Fatalf("Не удалось создать DataBaseManager: %v", err)
-	}
-	resultRows, err := dbManager.GetRows("heroes_list", []string{"*"}, map[string][]string{})
-	if err != nil {
-		log.Fatalf("Не удалось провести запрос %v", err)
-	}
-	var heroes []HeroPerPatch
-	for _, row := range resultRows {
-		heroes = append(heroes, HeroPerPatch{row[0], row[1], row[2]})
-	}
-	parsedTemplate, err := template.ParseFiles("web/templates/statistics.html")
-	if err != nil {
-		log.Fatalf("Ошибка при парсинге шаблона: %v", err)
-	}
-	parsedTemplate.Execute(w, struct{ HeroPerPatch []HeroPerPatch }{heroes})
-}
-func LoginHandler(w http.ResponseWriter, r *http.Request) {
-	renderTemplate(w, "login.html")
-}
-func RegisterHandler(w http.ResponseWriter, r *http.Request) {
-	renderTemplate(w, "register.html")
-}
-func ProfileHandler(w http.ResponseWriter, r *http.Request) {
-	renderTemplate(w, "profile.html")
-}
-
-func TeamAnalysisHandler(w http.ResponseWriter, r *http.Request) {
-	renderTemplate(w, "teams.html")
-}
-
-func RecommendationsHandler(w http.ResponseWriter, r *http.Request) {
-	renderTemplate(w, "recommendations.html")
-}
-
-func renderTemplate(w http.ResponseWriter, tmpl string) {
-	parsedTemplate, _ := template.ParseFiles("web/templates/" + tmpl)
-	parsedTemplate.Execute(w, nil)
 }

@@ -1,6 +1,7 @@
-package db
+package auth
 
 import (
+	"OracleGo/internal/db"
 	"errors"
 	_ "fmt"
 	"log"
@@ -8,12 +9,33 @@ import (
 	_ "github.com/lib/pq"
 )
 
+type Email struct {
+	Value string
+}
+
+func (e Email) GetValue() string {
+	return e.Value
+}
+
+type Password struct {
+	Value string
+}
+
+func (p Password) GetValue() string {
+	return p.Value
+}
+
+type User struct {
+	Email    Email
+	Password Password
+}
+
 type UsersDatabaseManager struct {
-	dbManager DatabaseManager
+	dbManager db.DatabaseManager
 }
 
 func NewUsersDatabaseManager() (*UsersDatabaseManager, error) {
-	dbManager, err := NewDatabaseManager()
+	dbManager, err := db.NewDatabaseManager()
 	if err != nil {
 		return nil, err
 	}
@@ -34,8 +56,8 @@ func (usersDbManager *UsersDatabaseManager) GetUser(email Email) (User, error) {
 }
 
 func (usersDbManager *UsersDatabaseManager) AddUsers(emails []Email, passwords []Password) error {
-	emailsValues := ValuesFromAny(emails)
-	passwordsValues := ValuesFromAny(passwords)
+	emailsValues := db.ValuesFromAny(emails)
+	passwordsValues := db.ValuesFromAny(passwords)
 
 	err := usersDbManager.dbManager.AddRows("users", map[string][]string{"email": emailsValues, "password": passwordsValues})
 	if err != nil {

@@ -33,16 +33,14 @@
 				<table>
 					<thead>
 						<tr>
-							<th>Patch</th>
 							<th>Hero</th>
 							<th>Winrate</th>
 						</tr>
 					</thead>
 					<tbody>
-						{{range .HeroPerPatch}}
+						{{range .HeroesWinrates}}
 						<tr>
-							<td>{{.Patch}}</td>
-							<td>{{.Name}}</td>
+							<td>{{.Hero.Value}}</td>
 							<td>{{.Winrate}}%</td>
 						</tr>
 						{{end}}

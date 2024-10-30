@@ -1,12 +1,11 @@
 package auth
 
 import (
-	"OracleGo/internal/db"
 	"log"
 )
 
 func createUser(email string, password string) error {
-	userManager, err := db.NewUsersDatabaseManager()
+	userManager, err := NewUsersDatabaseManager()
 	if err != nil {
 		log.Fatalf("Не удалось создать DataBaseManager: %v", err)
 	}
@@ -14,7 +13,7 @@ func createUser(email string, password string) error {
 	if hashErr != nil {
 		return hashErr
 	}
-	return userManager.AddUsers([]db.Email{db.Email{email}}, []db.Password{db.Password{hashedPassword}})
+	return userManager.AddUsers([]Email{Email{email}}, []Password{Password{hashedPassword}})
 }
 
 func AddUser(email string, password string, confirmPassword string) bool {

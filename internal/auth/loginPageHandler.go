@@ -1,7 +1,7 @@
-package handlers
+package auth
 
 import (
-	"OracleGo/internal/auth"
+	"OracleGo/internal/net"
 	_ "fmt"
 	"net/http"
 )
@@ -13,9 +13,9 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 		email := r.FormValue("email")
 		inputPassword := r.FormValue("password")
 
-		isValidUser := auth.ValidateUser(email, inputPassword)
+		isValidUser := ValidateUser(email, inputPassword)
 		if isValidUser {
-			err := saveSession(w, r, email)
+			err := net.SaveSession(w, r, email)
 			if err == nil {
 				http.Redirect(w, r, "/profile", http.StatusSeeOther)
 				return
@@ -28,5 +28,5 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	renderTemplate(w, r, "login.html", data)
+	net.RenderTemplate(w, r, "login.html", data)
 }
