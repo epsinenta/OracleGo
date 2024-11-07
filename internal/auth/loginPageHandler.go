@@ -3,6 +3,7 @@ package auth
 import (
 	"OracleGo/internal/net"
 	_ "fmt"
+	"log"
 	"net/http"
 )
 
@@ -12,8 +13,11 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodPost {
 		email := r.FormValue("email")
 		inputPassword := r.FormValue("password")
-
-		isValidUser := ValidateUser(email, inputPassword)
+		userManager, err := NewUsersDatabaseManager()
+		if err != nil {
+			log.Fatalf("Не удалось создать DataBaseManager: %v", err)
+		}
+		isValidUser := ValidateUser(userManager, email, inputPassword)
 		if isValidUser {
 			err := net.SaveSession(w, r, email)
 			if err == nil {

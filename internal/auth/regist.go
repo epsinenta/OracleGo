@@ -1,14 +1,6 @@
 package auth
 
-import (
-	"log"
-)
-
-func createUser(email string, password string) error {
-	userManager, err := NewUsersDatabaseManager()
-	if err != nil {
-		log.Fatalf("Не удалось создать DataBaseManager: %v", err)
-	}
+func createUser(userManager UserManagerInterface, email string, password string) error {
 	hashedPassword, hashErr := hashPassword(password)
 	if hashErr != nil {
 		return hashErr
@@ -16,16 +8,16 @@ func createUser(email string, password string) error {
 	return userManager.AddUsers([]Email{Email{email}}, []Password{Password{hashedPassword}})
 }
 
-func AddUser(email string, password string, confirmPassword string) bool {
+func AddUser(userManager UserManagerInterface, email string, password string, confirmPassword string) bool {
 	if password != confirmPassword {
 		return false
 	}
-	_, parsErr := findUser(email)
+	_, parsErr := findUser(userManager, email)
 	if parsErr != nil {
 
 		if parsErr.Error() == "Пользователь не найден\n" {
 
-			return createUser(email, password) == nil
+			return createUser(userManager, email, password) == nil
 		}
 
 		return false

@@ -30,6 +30,11 @@ type User struct {
 	Password Password
 }
 
+type UserManagerInterface interface {
+	GetUser(email Email) (User, error)
+	AddUsers(emails []Email, passwords []Password) error
+}
+
 type UsersDatabaseManager struct {
 	dbManager db.DatabaseManager
 }
