@@ -5,12 +5,14 @@ import (
 	"log"
 	"os"
 	"strings"
+	"sync"
 
 	_ "github.com/lib/pq"
 )
 
 type DatabaseManager struct {
-	db DB
+	db     DB
+	dbLock sync.Mutex
 }
 
 func NewDatabaseManager() (*DatabaseManager, error) {
@@ -118,6 +120,8 @@ func (dbManager *DatabaseManager) GetRows(tableName string, params []string, arg
 
 // Модифицированный метод для безопасного добавления строк
 func (dbManager *DatabaseManager) AddRows(tableName string, args map[string][]string) error {
+	dbManager.dbLock.Lock()
+	defer dbManager.dbLock.Unlock()
 	columns := make([]string, 0, len(args))
 	for col := range args {
 		columns = append(columns, col)
@@ -155,6 +159,8 @@ func (dbManager *DatabaseManager) AddRows(tableName string, args map[string][]st
 }
 
 func (dbManager *DatabaseManager) DeleteRows(tableName string, args map[string][]string) error {
+	dbManager.dbLock.Lock()
+	defer dbManager.dbLock.Unlock()
 	// Начинаем с основного запроса
 	query := fmt.Sprintf("DELETE FROM %s", tableName)
 

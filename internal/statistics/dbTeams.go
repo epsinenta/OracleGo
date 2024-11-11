@@ -2,8 +2,8 @@ package statistics
 
 import (
 	"OracleGo/internal/db"
+	"fmt"
 	_ "fmt"
-	"log"
 
 	_ "github.com/lib/pq"
 )
@@ -32,27 +32,71 @@ func NewTeamsDatabaseManager() (*TeamsDatabaseManager, error) {
 	}
 	return &TeamsDatabaseManager{dbManager: *dbManager}, nil
 }
-
-func (teamsDbManager *TeamsDatabaseManager) GetTeamsList() ([]Team, error) {
+func (teamsDbManager *TeamsDatabaseManager) getTeamsListAsync(resultChan chan<- []Team, errorChan chan<- error) {
 	teamsRows, err := teamsDbManager.dbManager.GetRows("teams_roasters", []string{"team_name"}, map[string][]string{})
 	if err != nil {
-		log.Fatalf("Не удалось провести запрос %v", err)
+		errorChan <- fmt.Errorf("не удалось провести запрос: %w", err)
+		return
 	}
+
 	var result []Team
 	for _, row := range teamsRows {
 		result = append(result, Team{row[0]})
 	}
-	return result, nil
+
+	// Отправка результата в канал
+	resultChan <- result
+}
+
+func (teamsDbManager *TeamsDatabaseManager) GetTeamsList() ([]Team, error) {
+	resultChan := make(chan []Team)
+	errorChan := make(chan error)
+
+	// Запуск асинхронной функции с передачей каналов
+	go teamsDbManager.getTeamsListAsync(resultChan, errorChan)
+
+	// Ожидание результата или ошибки
+	select {
+	case result := <-resultChan:
+		return result, nil
+	case err := <-errorChan:
+		return nil, err
+	}
+}
+
+func (teamsDbManager *TeamsDatabaseManager) getTeamsRoastersListAsync(resultChan chan<- []TeamRoaster, errorChan chan<- error) {
+	teamsRows, err := teamsDbManager.dbManager.GetRows("teams_roasters", []string{"*"}, map[string][]string{})
+	if err != nil {
+		errorChan <- fmt.Errorf("не удалось провести запрос: %w", err)
+		return
+	}
+
+	var result []TeamRoaster
+	for _, row := range teamsRows {
+		result = append(result, TeamRoaster{
+			Team: Team{Value: row[0]},
+			Players: []Player{
+				{row[1]}, {row[2]}, {row[3]}, {row[4]}, {row[5]},
+			},
+		})
+	}
+
+	// Отправка результата в канал
+	resultChan <- result
 }
 
 func (teamsDbManager *TeamsDatabaseManager) GetTeamsRoastersList() ([]TeamRoaster, error) {
-	teamsRows, err := teamsDbManager.dbManager.GetRows("teams_roasters", []string{"*"}, map[string][]string{})
-	if err != nil {
-		log.Fatalf("Не удалось провести запрос %v", err)
+	resultChan := make(chan []TeamRoaster)
+	errorChan := make(chan error)
+
+	// Запуск асинхронной функции с передачей каналов
+	go teamsDbManager.getTeamsRoastersListAsync(resultChan, errorChan)
+
+	// Ожидание результата или ошибки
+	select {
+	case result := <-resultChan:
+		return result, nil
+	case err := <-errorChan:
+		return nil, err
 	}
-	var result []TeamRoaster
-	for _, row := range teamsRows {
-		result = append(result, TeamRoaster{Team: Team{Value: row[0]}, Players: []Player{{row[1]}, {row[2]}, {row[3]}, {row[4]}, {row[5]}}})
-	}
-	return result, nil
 }
