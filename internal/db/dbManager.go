@@ -144,8 +144,7 @@ func (dbManager *DatabaseManager) AddRows(tableName string, args map[string][]st
 		valuePlaceholders[i] = fmt.Sprintf("(%s)", strings.Join(rowPlaceholders, ", "))
 	}
 
-	query := fmt.Sprintf("INSERT INTO %s (%s) VALUES %s", tableName, strings.Join(columns, ", "), strings.Join(valuePlaceholders, ", "))
-
+	query := fmt.Sprintf("INSERT INTO \"%s\" (%s) VALUES %s", tableName, strings.Join(columns, ", "), strings.Join(valuePlaceholders, ", "))
 	// Выполняем подготовленный запрос
 	_, err := dbManager.db.Exec(query, queryArgs...)
 	if err != nil {

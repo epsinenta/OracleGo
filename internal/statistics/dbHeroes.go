@@ -63,7 +63,11 @@ func (heroesDbManager *HeroesDatabaseManager) GetAllHeroesWinrates() ([]Winrate,
 
 func (heroesDbManager *HeroesDatabaseManager) GetHeroesWinrates(heroes []Hero) ([]Winrate, error) {
 	heroesNames := db.ValuesFromAny(heroes)
-	winratesRows, err := heroesDbManager.dbManager.GetRows("heroes_list", []string{"winrate", "hero_name"}, map[string][]string{"patch": {"7.35c"}, "hero_name": heroesNames})
+	params := map[string][]string{"patch": {"7.35c"}}
+	if len(heroesNames) != 0 {
+		params["hero_name"] = heroesNames
+	}
+	winratesRows, err := heroesDbManager.dbManager.GetRows("heroes_list", []string{"winrate", "hero_name"}, params)
 	if err != nil {
 		log.Fatalf("Не удалось провести запрос %v", err)
 	}
