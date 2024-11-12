@@ -2,6 +2,7 @@ package net
 
 import (
 	"html/template"
+	"log"
 	"net/http"
 
 	"os"
@@ -15,14 +16,40 @@ var (
 	templates *template.Template
 )
 
-func init() {
-	var path string
-	if os.Getenv("GO_ENV") == "test" {
-		path = filepath.Join("..", "..", "web", "templates", "*.html")
-	} else {
-		path = filepath.Join("web", "templates", "*.html")
+func GetTemplatePath() string {
+	cwd, err := os.Getwd()
+	if err != nil {
+		log.Fatal(err)
 	}
-	templates = template.Must(template.ParseGlob(path))
+
+	for {
+		templatePath := filepath.Join(cwd, "web", "templates")
+		log.Printf("Проверка пути: %s", templatePath) // Отладочное сообщение
+
+		if _, err := os.Stat(templatePath); !os.IsNotExist(err) {
+			return filepath.Join(templatePath, "*.html")
+		}
+
+		parentDir := filepath.Dir(cwd)
+		if parentDir == cwd {
+			log.Fatalf("Не удалось найти папку с шаблонами, начальный путь был: %s", filepath.Join(cwd, "web", "templates", "*.html"))
+		}
+
+		cwd = parentDir
+	}
+}
+
+func init() {
+	/*
+		var path string
+		if os.Getenv("GO_ENV") == "test" {
+			path = filepath.Join("..", "..", "web", "templates", "*.html")
+		} else {
+			path = filepath.Join("web", "templates", "*.html")
+		}
+	*/
+	templatePath := GetTemplatePath()
+	templates = template.Must(template.ParseGlob(templatePath))
 }
 
 func RenderTemplate(w http.ResponseWriter, r *http.Request, templateName string, data map[string]interface{}) {
