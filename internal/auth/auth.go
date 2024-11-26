@@ -1,8 +1,6 @@
 package auth
 
 import (
-	"log"
-
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -14,22 +12,17 @@ func hashPassword(password string) (string, error) {
 	return string(hash), nil
 }
 
-func checkPassword(hashedPassword, password string) bool {
+func checkPassword(hashedPassword string, password string) bool {
 	err := bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(password))
 	return err == nil
 }
 
-func findUser(email string) (User, error) {
-	userManager, err := NewUsersDatabaseManager()
-	if err != nil {
-		log.Fatalf("Не удалось создать DataBaseManager: %v", err)
-	}
-
+func findUser(userManager UserManagerInterface, email string) (User, error) {
 	return userManager.GetUser(Email{email})
 }
 
-func ValidateUser(email string, password string) bool {
-	gettenUser, parsErr := findUser(email)
+func ValidateUser(userManager UserManagerInterface, email string, password string) bool {
+	gettenUser, parsErr := findUser(userManager, email)
 	if parsErr != nil {
 
 		if parsErr.Error() == "Пользователь не найден\n" {

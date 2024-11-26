@@ -3,6 +3,7 @@ package auth
 import (
 	"OracleGo/internal/net"
 	_ "fmt"
+	"log"
 	"net/http"
 )
 
@@ -13,7 +14,13 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 		email := r.FormValue("email")
 		inputPassword := r.FormValue("password")
 		confirmPassword := r.FormValue("confirm-password")
-		isCreateUser := AddUser(email, inputPassword, confirmPassword)
+
+		userManager, err := NewUsersDatabaseManager()
+		if err != nil {
+			log.Fatalf("Не удалось создать DataBaseManager: %v", err)
+		}
+
+		isCreateUser := AddUser(userManager, email, inputPassword, confirmPassword)
 		if isCreateUser {
 			http.Redirect(w, r, "/login", http.StatusSeeOther)
 

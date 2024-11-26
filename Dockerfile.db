@@ -1,0 +1,9 @@
+# Используем официальный образ PostgreSQL
+FROM postgres:15
+
+# Устанавливаем переменные окружения для пользователя и пароля
+ENV POSTGRES_USER=postgres
+ENV POSTGRES_PASSWORD=1q2ws3edc4r
+
+# Копируем дампы и скрипт для инициализации
+COPY db-dumps/*.dump /docker-entrypoint-initdb.d/

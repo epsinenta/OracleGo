@@ -13,7 +13,6 @@ import (
 )
 
 func main() {
-
 	http.HandleFunc("/", home.HomeHandler)
 
 	http.Handle("/login", net.RedirectIfAuthenticated(http.HandlerFunc(auth.LoginHandler)))
