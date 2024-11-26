@@ -44,7 +44,7 @@ func NewPlayersDatabaseManager() (*PlayersDatabaseManager, error) {
 func (playersDbManager *PlayersDatabaseManager) GetPlayerOnHeroWinrate(players []Player, heroes []Hero) ([]PlayerWinrate, error) {
 	playerNames := db.ValuesFromAny(players)
 	heroesNames := db.ValuesFromAny(heroes)
-	winrateRows, err := playersDbManager.dbManager.GetRows("players_heroes_statistics", []string{"winrate", "player_name", "hero_name"}, map[string][]string{"player_name": playerNames, "hero_name": heroesNames})
+	winrateRows, err := playersDbManager.dbManager.GetRows("players_heroes_statistic", []string{"winrate", "player_name", "hero_name"}, map[string][]string{"player_name": playerNames, "hero_name": heroesNames})
 	if err != nil {
 		log.Fatalf("Не удалось провести запрос %v", err)
 	}
@@ -63,7 +63,7 @@ func (playersDbManager *PlayersDatabaseManager) GetPlayerOnHeroWinrate(players [
 func (playersDbManager *PlayersDatabaseManager) GetPlayerCountOnHero(players []Player, heroes []Hero) ([]GamesCount, error) {
 	playerNames := db.ValuesFromAny(players)
 	heroesNames := db.ValuesFromAny(heroes)
-	winrateRows, err := playersDbManager.dbManager.GetRows("players_heroes_statistics", []string{"count_of_matches", "player_name", "hero_name"}, map[string][]string{"player_name": playerNames, "hero_name": heroesNames})
+	winrateRows, err := playersDbManager.dbManager.GetRows("players_heroes_statistic", []string{"count_of_matches", "player_name", "hero_name"}, map[string][]string{"player_name": playerNames, "hero_name": heroesNames})
 	if err != nil {
 		log.Fatalf("Не удалось провести запрос %v", err)
 	}
