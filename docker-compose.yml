@@ -9,12 +9,15 @@ services:
       - '8080:8080'
     depends_on:
       - db
+      - redis
     environment:
       DB_HOST: db
       DB_PORT: 5432
       DB_USER: postgres
       DB_PASSWORD: 1q2ws3edc4r
       DB_NAME: Dota
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
 
   db:
     build:
@@ -28,5 +31,13 @@ services:
     ports:
       - '5432:5432'
 
+  redis:
+    image: redis:7.2
+    ports:
+      - '6379:6379'
+    volumes:
+      - redisdata:/data
+
 volumes:
   pgdata:
+  redisdata:

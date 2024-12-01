@@ -1,18 +1,23 @@
 package db
 
 import (
+	"OracleGo/internal/redis"
 	"fmt"
 	"log"
 	"os"
 	"strings"
 	"sync"
+	"time"
+	_ "time"
 
 	_ "github.com/lib/pq"
 )
 
 type DatabaseManager struct {
+	dbName string
 	db     DB
 	dbLock sync.Mutex
+	redis  redis.RedisManager
 }
 
 func NewDatabaseManager() (*DatabaseManager, error) {
@@ -25,8 +30,7 @@ func NewDatabaseManager() (*DatabaseManager, error) {
 	if err != nil {
 		return nil, err
 	}
-
-	return &DatabaseManager{db: *db}, nil
+	return &DatabaseManager{dbName: dbName, db: *db, redis: *redis.NewRedisManager()}, nil
 }
 
 func (dbManager *DatabaseManager) BuildSQLQuery(tableName string, params []string, args map[string][]string) string {
@@ -71,7 +75,18 @@ func (dbManager *DatabaseManager) GetRows(tableName string, params []string, arg
 	if len(whereClauses) > 0 {
 		query += " WHERE " + strings.Join(whereClauses, " AND ")
 	}
-
+	cachedQuery := dbManager.dbName + fmt.Sprintf(query, queryArgs)
+	if tableName != "users" {
+		var cachedData [][]string
+		err := dbManager.redis.GetCachedData(cachedQuery, &cachedData)
+		if err == nil {
+			fmt.Println("данные есть в кеше", cachedQuery, cachedData)
+			//log.Fatal("данные есть в кеше", cachedQuery)
+			return cachedData, nil
+		}
+		fmt.Println("данных нет в кеше", cachedQuery)
+		//log.Fatal("данных нет в кеше", cachedQuery)
+	}
 	// Выполняем подготовленный запрос
 	rows, err := dbManager.db.Query(query, queryArgs...)
 	if err != nil {
@@ -113,6 +128,16 @@ func (dbManager *DatabaseManager) GetRows(tableName string, params []string, arg
 
 	if err = rows.Err(); err != nil {
 		return nil, err
+	}
+	dbManager.dbLock.Lock()
+	defer dbManager.dbLock.Unlock()
+	if tableName != "users" {
+		dbManager.redis.CacheData(cachedQuery, result, 10*time.Minute)
+		if err != nil {
+
+			fmt.Printf("Ошибка при кэшировании данных: %v/n", err)
+			log.Fatalf("Ошибка при кэшировании данных: %v", err)
+		}
 	}
 
 	return result, nil

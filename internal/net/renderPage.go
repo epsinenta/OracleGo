@@ -24,7 +24,6 @@ func GetTemplatePath() string {
 
 	for {
 		templatePath := filepath.Join(cwd, "web", "templates")
-		log.Printf("Проверка пути: %s", templatePath) // Отладочное сообщение
 
 		if _, err := os.Stat(templatePath); !os.IsNotExist(err) {
 			return filepath.Join(templatePath, "*.html")
@@ -40,14 +39,7 @@ func GetTemplatePath() string {
 }
 
 func init() {
-	/*
-		var path string
-		if os.Getenv("GO_ENV") == "test" {
-			path = filepath.Join("..", "..", "web", "templates", "*.html")
-		} else {
-			path = filepath.Join("web", "templates", "*.html")
-		}
-	*/
+
 	templatePath := GetTemplatePath()
 	templates = template.Must(template.ParseGlob(templatePath))
 }
