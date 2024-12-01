@@ -44,7 +44,6 @@ func NewPlayersDatabaseManager() (*PlayersDatabaseManager, error) {
 func (playersDbManager *PlayersDatabaseManager) getPlayerOnHeroWinrateAsync(players []Player, heroes []Hero, resultChan chan<- []PlayerWinrate, errorChan chan<- error) {
 	playerNames := db.ValuesFromAny(players)
 	heroesNames := db.ValuesFromAny(heroes)
-
 	winrateRows, err := playersDbManager.dbManager.GetRows("players_heroes_statistic", []string{"winrate", "player_name", "hero_name"}, map[string][]string{"player_name": playerNames, "hero_name": heroesNames})
 	if err != nil {
 		errorChan <- fmt.Errorf("не удалось провести запрос: %w", err)
@@ -83,7 +82,6 @@ func (playersDbManager *PlayersDatabaseManager) GetPlayerOnHeroWinrate(players [
 func (playersDbManager *PlayersDatabaseManager) getPlayerCountOnHeroAsync(players []Player, heroes []Hero, resultChan chan<- []GamesCount, errorChan chan<- error) {
 	playerNames := db.ValuesFromAny(players)
 	heroesNames := db.ValuesFromAny(heroes)
-
 	winrateRows, err := playersDbManager.dbManager.GetRows("players_heroes_statistic", []string{"count_of_matches", "player_name", "hero_name"}, map[string][]string{"player_name": playerNames, "hero_name": heroesNames})
 	if err != nil {
 		errorChan <- fmt.Errorf("не удалось провести запрос: %w", err)
