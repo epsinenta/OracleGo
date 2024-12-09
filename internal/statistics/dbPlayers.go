@@ -33,6 +33,11 @@ type PlayerWinrate struct {
 	Winrate float64
 }
 
+type PlayerWinrateCurPatch struct {
+	Player  Player
+	Winrate float64
+}
+
 func NewPlayersDatabaseManager() (*PlayersDatabaseManager, error) {
 	dbManager, err := db.NewDatabaseManager()
 	if err != nil {
@@ -69,6 +74,43 @@ func (playersDbManager *PlayersDatabaseManager) GetPlayerOnHeroWinrate(players [
 
 	// Запуск асинхронной функции с передачей каналов
 	go playersDbManager.getPlayerOnHeroWinrateAsync(players, heroes, resultChan, errorChan)
+
+	// Ожидание результата или ошибки
+	select {
+	case result := <-resultChan:
+		return result, nil
+	case err := <-errorChan:
+		return nil, err
+	}
+}
+
+func (playersDbManager *PlayersDatabaseManager) getPlayersWinrateAsync(players []Player, resultChan chan<- []PlayerWinrateCurPatch, errorChan chan<- error) {
+	playerNames := db.ValuesFromAny(players)
+	winrateRows, err := playersDbManager.dbManager.GetRows("pro_players_list", []string{"winrate", "player_name"}, map[string][]string{"player_name": playerNames, "patch": {"7.35c"}})
+	if err != nil {
+		errorChan <- fmt.Errorf("не удалось провести запрос: %w", err)
+		return
+	}
+
+	var result []PlayerWinrateCurPatch
+	for _, row := range winrateRows {
+		winrate, convErr := strconv.ParseFloat(row[0], 64)
+		if convErr != nil {
+			errorChan <- fmt.Errorf("не удалось конвертировать string to float: %w", convErr)
+			return
+		}
+		result = append(result, PlayerWinrateCurPatch{Winrate: winrate, Player: Player{row[1]}})
+	}
+
+	resultChan <- result
+}
+
+func (playersDbManager *PlayersDatabaseManager) GetPlayersWinrate(players []Player) ([]PlayerWinrateCurPatch, error) {
+	resultChan := make(chan []PlayerWinrateCurPatch)
+	errorChan := make(chan error)
+
+	// Запуск асинхронной функции с передачей каналов
+	go playersDbManager.getPlayersWinrateAsync(players, resultChan, errorChan)
 
 	// Ожидание результата или ошибки
 	select {
