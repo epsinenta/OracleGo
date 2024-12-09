@@ -122,7 +122,14 @@ func PredictionHandler(w http.ResponseWriter, r *http.Request) {
 		for _, playerName := range append(team1Players, team2Players...) {
 			players = append(players, statistics.Player{Value: playerName})
 		}
-		playerWinrates, err := dbPlayerManager.GetPlayerOnHeroWinrate(players, heroes)
+
+		//playerWinrates, err := dbPlayerManager.GetPlayersWinrate(players)
+		if err != nil {
+			http.Error(w, "Failed to get player winrates on heroes", http.StatusInternalServerError)
+			return
+		}
+
+		playerOnHeroWinrates, err := dbPlayerManager.GetPlayerOnHeroWinrate(players, heroes)
 		if err != nil {
 			http.Error(w, "Failed to get player winrates on heroes", http.StatusInternalServerError)
 			return
@@ -141,9 +148,87 @@ func PredictionHandler(w http.ResponseWriter, r *http.Request) {
 		rowData = append(rowData, team1Heroes...)
 		rowData = append(rowData, team2Heroes...)
 
+		////////////////////////////
+
+		// for _, winrate := range playerWinrates {
+		//	rowData = append(rowData, fmt.Sprintf("%.2f", winrate.Winrate))
+		//}
+
+		for i := 0; i < 10; i++ {
+			rowData = append(rowData, "0 ")
+		}
+
+		////////////////////////////
+
+		for i, player := range team1Players {
+			hero := team1Heroes[i]
+			found := false
+			for _, winrate := range playerOnHeroWinrates {
+				if winrate.Player.Value == player && winrate.Hero.Value == hero {
+					rowData = append(rowData, fmt.Sprintf("%.2f", winrate.Winrate))
+					found = true
+					break
+				}
+			}
+			if !found {
+				rowData = append(rowData, "0.00")
+			}
+		}
+
+		for i, player := range team2Players {
+			hero := team2Heroes[i]
+			found := false
+			for _, winrate := range playerOnHeroWinrates {
+				if winrate.Player.Value == player && winrate.Hero.Value == hero {
+					rowData = append(rowData, fmt.Sprintf("%.2f", winrate.Winrate))
+					found = true
+					break
+				}
+			}
+			if !found {
+				rowData = append(rowData, "0.00")
+			}
+		}
+
+		////////////////////////////////
+
+		for i, player := range team1Players {
+			hero := team1Heroes[i]
+			found := false
+			for _, gameCount := range playerGameCounts {
+				if gameCount.Player.Value == player && gameCount.Hero.Value == hero {
+					rowData = append(rowData, fmt.Sprintf("%d", gameCount.Count))
+					found = true
+					break
+				}
+			}
+			if !found {
+				rowData = append(rowData, "0")
+			}
+		}
+
+		for i, player := range team2Players {
+			hero := team2Heroes[i]
+			found := false
+			for _, gameCount := range playerGameCounts {
+				if gameCount.Player.Value == player && gameCount.Hero.Value == hero {
+					rowData = append(rowData, fmt.Sprintf("%d", gameCount.Count))
+					found = true
+					break
+				}
+			}
+			if !found {
+				rowData = append(rowData, "0")
+			}
+		}
+
+		///////////////////////////////
+
 		for _, winrate := range heroWinrates {
 			rowData = append(rowData, fmt.Sprintf("%.2f", winrate.Winrate))
 		}
+
+		///////////////////////////////
 
 		for _, team1Hero := range team1Heroes {
 			for _, team2Hero := range team2Heroes {
@@ -161,65 +246,7 @@ func PredictionHandler(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 
-		for i, player := range team1Players {
-			hero := team1Heroes[i]
-			found := false
-			for _, winrate := range playerWinrates {
-				if winrate.Player.Value == player && winrate.Hero.Value == hero {
-					rowData = append(rowData, fmt.Sprintf("%.2f", winrate.Winrate))
-					found = true
-					break
-				}
-			}
-			if !found {
-				rowData = append(rowData, "0.00")
-			}
-		}
-
-		for i, player := range team2Players {
-			hero := team2Heroes[i]
-			found := false
-			for _, winrate := range playerWinrates {
-				if winrate.Player.Value == player && winrate.Hero.Value == hero {
-					rowData = append(rowData, fmt.Sprintf("%.2f", winrate.Winrate))
-					found = true
-					break
-				}
-			}
-			if !found {
-				rowData = append(rowData, "0.00")
-			}
-		}
-
-		for i, player := range team1Players {
-			hero := team1Heroes[i]
-			found := false
-			for _, gameCount := range playerGameCounts {
-				if gameCount.Player.Value == player && gameCount.Hero.Value == hero {
-					rowData = append(rowData, fmt.Sprintf("%d", gameCount.Count))
-					found = true
-					break
-				}
-			}
-			if !found {
-				rowData = append(rowData, "0")
-			}
-		}
-
-		for i, player := range team2Players {
-			hero := team2Heroes[i]
-			found := false
-			for _, gameCount := range playerGameCounts {
-				if gameCount.Player.Value == player && gameCount.Hero.Value == hero {
-					rowData = append(rowData, fmt.Sprintf("%d", gameCount.Count))
-					found = true
-					break
-				}
-			}
-			if !found {
-				rowData = append(rowData, "0")
-			}
-		}
+		////////////////////////////////////////
 
 		outputRow := strings.Join(rowData, ",")
 

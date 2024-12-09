@@ -1,1 +1,5 @@
 .vscode
+Dota.dump
+DotaTest.dump
+venv
+go[0-9]*.*
