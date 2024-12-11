@@ -278,8 +278,34 @@ func PredictionHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		data["PredictionResult"] = resultData["prediction"]
-		data["PredictionProbability"] = resultData["probability"]
+		//data["PredictionResult"] = resultData["prediction"]
+		//data["PredictionProbability"] = resultData["probability"]
+		prediction := resultData["prediction"].(bool)
+		probability := resultData["probability"].(float64)
+
+		var predictedTeam string
+		var predictedProbability float64
+		if probability < 0.5 {
+			if prediction {
+				predictedTeam = team2
+				predictedProbability = (1 - probability) * 100
+			} else {
+				predictedTeam = team1
+				predictedProbability = (1 - probability) * 100
+			}
+		} else {
+			if prediction {
+				predictedTeam = team1
+				predictedProbability = probability * 100
+			} else {
+				predictedTeam = team2
+				predictedProbability = (1 - probability) * 100
+			}
+		}
+
+		data["PredictionResult"] = predictedTeam
+		data["PredictionProbability"] = fmt.Sprintf("%.2f", predictedProbability)
+
 	}
 
 	if teams, err := dbTeamManager.GetTeamsList(); err == nil {

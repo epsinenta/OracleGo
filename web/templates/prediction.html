@@ -33,14 +33,12 @@
             <p>Select the teams and heroes to get a prediction for the match outcome.</p>
 
             {{if .PredictionResult}}
-            <div class="prediction-result">
-                <h2>Prediction Result</h2>
-                <p>The predicted outcome is: <strong>{{.PredictionResult}}</strong></p>
-
-                {{if .PredictionProbability}}
-                <p>Probability of this outcome: <strong>{{.PredictionProbability}}</strong></p>
-                {{end}}
-            </div>
+                <div class="prediction-result">
+                    <h2>Prediction Result</h2>
+                    
+                    <p>The predicted winner is: <strong>{{.PredictionResult}}</strong></p>
+                    <p>Winning probability: <strong>{{.PredictionProbability}}%</strong></p>
+                </div>
             {{end}}
 
             <!-- Начало формы -->
