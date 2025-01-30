@@ -2,32 +2,37 @@
 FROM golang:1.23-alpine AS builder
 
 # Устанавливаем рабочую директорию
-WORKDIR /app
+WORKDIR /OracleGo
+
+COPY go.mod go.sum ./
+
+RUN go mod download
 
 # Копируем все файлы проекта в контейнер
 COPY . .
 
 # Загружаем зависимости и собираем проект
-RUN go mod tidy
 RUN go build -o main main.go
 
 # Используем легковесный образ для финального контейнера
-FROM alpine:latest
+FROM python:3.10-slim
 
-# Устанавливаем зависимости
-RUN apk --no-cache add ca-certificates
+# Установка системных зависимостей
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential python3-dev libffi-dev gcc g++ && \
+    apt-get clean && rm -rf /var/lib/apt/lists/*
+
+# Обновление pip и установка библиотек поэтапно
+RUN pip install --no-cache-dir --upgrade pip setuptools wheel
+RUN pip install --no-cache-dir pandas==1.5.3 numpy
+RUN pip install --no-cache-dir torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/cpu
+RUN pip install --no-cache-dir lightautoml==0.3.8.1 nltk transformers
 
 # Создаем рабочую директорию
-WORKDIR /app
+WORKDIR /OracleGo
 
 # Копируем собранное приложение из builder-образа
-COPY --from=builder /app/main /app/main
-
-# Копируем папку с шаблонами
-COPY --from=builder /app/web /app/web
-
-# Открываем порт (замените 8080 на нужный вам порт)
-EXPOSE 8080
+COPY --from=builder /OracleGo /OracleGo
 
 # Команда для запуска приложения
-CMD ["/app/main"]
+CMD ["/OracleGo/main"]

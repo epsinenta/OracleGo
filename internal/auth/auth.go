@@ -17,23 +17,23 @@ func checkPassword(hashedPassword string, password string) bool {
 	return err == nil
 }
 
-func findUser(userManager UserManagerInterface, email string) (User, error) {
-	return userManager.GetUser(Email{email})
-}
+// func findUser(userManager UserManagerInterface, email string) (User, error) {
+// 	return userManager.GetUser(Email{email})
+// }
 
-func ValidateUser(userManager UserManagerInterface, email string, password string) bool {
-	gettenUser, parsErr := findUser(userManager, email)
-	if parsErr != nil {
+// func ValidateUser(userManager UserManagerInterface, email string, password string) bool {
+// 	gettenUser, parsErr := findUser(userManager, email)
+// 	if parsErr != nil {
 
-		if parsErr.Error() == "Пользователь не найден\n" {
-			return false
-		}
-		return false
-	}
+// 		if parsErr.Error() == "Пользователь не найден\n" {
+// 			return false
+// 		}
+// 		return false
+// 	}
 
-	if (gettenUser.Email != Email{Value: email}) || !checkPassword(gettenUser.Password.GetValue(), password) {
+// 	if (gettenUser.Email != Email{Value: email}) || !checkPassword(gettenUser.Password.GetValue(), password) {
 
-		return false
-	}
-	return true
-}
+// 		return false
+// 	}
+// 	return true
+// }

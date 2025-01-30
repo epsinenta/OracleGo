@@ -1,18 +1,19 @@
 package redis
 
 import (
+	"OracleGo/internal/interfaces"
+	"OracleGo/internal/utils"
 	"context"
 	"encoding/json"
 	"fmt"
-	"log"
-	"os"
 	"time"
 
+	"github.com/pkg/errors"
 	"github.com/redis/go-redis/v9"
 )
 
-// RedisManager - структура для работы с Redis
-type RedisManager struct {
+// redisManager - структура для работы с Redis
+type redisManager struct {
 	RedisHost     string
 	RedisPort     string
 	RedisPassword string
@@ -21,11 +22,11 @@ type RedisManager struct {
 }
 
 // NewRedisManager - конструктор для инициализации RedisManager
-func NewRedisManager() *RedisManager {
-	manager := &RedisManager{
-		RedisHost:     getEnv("REDIS_HOST", "localhost"),
-		RedisPort:     getEnv("REDIS_PORT", "6379"),
-		RedisPassword: getEnv("REDIS_PASSWORD", ""),
+func NewRedisManager() (interfaces.RedisManager, error) {
+	manager := &redisManager{
+		RedisHost:     utils.GetEnv("REDIS_HOST", "localhost"),
+		RedisPort:     utils.GetEnv("REDIS_PORT", "6379"),
+		RedisPassword: utils.GetEnv("REDIS_PASSWORD", ""),
 		ctx:           context.Background(),
 	}
 
@@ -37,7 +38,7 @@ func NewRedisManager() *RedisManager {
 
 	// Проверка подключения
 	if err := manager.Ping(); err != nil {
-		log.Fatalf("Не удалось подключиться к Redis: %v", err)
+		return nil, errors.Wrap(err, "Не удалось подключиться к Redis")
 	}
 	/*
 		err := manager.redisClient.FlushDB(manager.ctx).Err()
@@ -45,17 +46,17 @@ func NewRedisManager() *RedisManager {
 			log.Fatalf("Ошибка при очистке базы данных: %v", err)
 		}
 	*/
-	return manager
+	return manager, nil
 }
 
 // Ping - проверка подключения к Redis
-func (r *RedisManager) Ping() error {
+func (r *redisManager) Ping() error {
 	_, err := r.redisClient.Ping(r.ctx).Result()
 	return err
 }
 
 // CacheData - функция для кэширования данных
-func (r *RedisManager) CacheData(key string, value interface{}, expiration time.Duration) error {
+func (r *redisManager) CacheData(key string, value interface{}, expiration time.Duration) error {
 	data, err := json.Marshal(value)
 	if err != nil {
 		return fmt.Errorf("ошибка при сериализации данных: %v", err)
@@ -70,7 +71,7 @@ func (r *RedisManager) CacheData(key string, value interface{}, expiration time.
 }
 
 // GetCachedData - функция для получения кэшированных данных
-func (r *RedisManager) GetCachedData(key string, dest interface{}) error {
+func (r *redisManager) GetCachedData(key string, dest interface{}) error {
 	data, err := r.redisClient.Get(r.ctx, key).Result()
 	if err == redis.Nil {
 		return fmt.Errorf("данные по ключу '%s' не найдены", key)
@@ -86,11 +87,6 @@ func (r *RedisManager) GetCachedData(key string, dest interface{}) error {
 	return nil
 }
 
-// Вспомогательная функция для получения переменных окружения с дефолтным значением
-func getEnv(key, defaultValue string) string {
-	value, exists := os.LookupEnv(key)
-	if !exists {
-		return defaultValue
-	}
-	return value
+func (r *redisManager) GratefulStop() error {
+	return r.redisClient.Close()
 }

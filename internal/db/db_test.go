@@ -1,21 +1,14 @@
 package db
 
 import (
+	"OracleGo/internal/interfaces"
 	"testing"
 )
 
-const (
-	host     = "localhost"
-	port     = "5432"
-	user     = "postgres"
-	password = "1q2ws3edc4r"
-	dbname   = "DotaTest" // тестовая база данных
-)
-
 // setupTestDB подключается к тестовой базе данных для использования в тестах.
-func setupTestDB(t *testing.T) *DB {
+func setupTestDB(t *testing.T) interfaces.DatabaseManager {
 	t.Helper()
-	db, err := NewDB(host, port, user, password, dbname)
+	db, err := NewDatabaseManager()
 	if err != nil {
 		t.Fatalf("Не удалось подключиться к тестовой базе данных: %v", err)
 	}
@@ -26,14 +19,6 @@ func setupTestDB(t *testing.T) *DB {
 func TestNewDB_Success(t *testing.T) {
 	db := setupTestDB(t)
 	defer db.Close()
-}
-
-// TestNewDB_InvalidCredentials проверяет, что при неверных данных подключения функция возвращает ошибку.
-func TestNewDB_InvalidCredentials(t *testing.T) {
-	_, err := NewDB(host, port, "wrong_user", "wrong_password", dbname)
-	if err == nil {
-		t.Error("Ожидалась ошибка при подключении с неверными учетными данными, но её не произошло")
-	}
 }
 
 // TestDB_AddUser проверяет добавление пользователя в таблицу `users`.
@@ -96,10 +81,5 @@ func TestDB_Close(t *testing.T) {
 	err := db.Close()
 	if err != nil {
 		t.Errorf("Ошибка при закрытии подключения: %v", err)
-	}
-
-	// Проверка, что соединение закрыто.
-	if err := db.conn.Ping(); err == nil {
-		t.Error("Ожидалась ошибка при пинге закрытого подключения, но соединение активно")
 	}
 }
