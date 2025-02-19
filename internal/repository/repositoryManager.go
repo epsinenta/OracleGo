@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"log"
 	"strings"
-	"time"
 
 	_ "github.com/lib/pq"
 )
@@ -61,16 +60,16 @@ func (dbManager *databaseManager) GetRows(tableName string, params []string, arg
 	if len(whereClauses) > 0 {
 		query += " WHERE " + strings.Join(whereClauses, " AND ")
 	}
-	cachedQuery := fmt.Sprintf(query, queryArgs)
 
-	var cachedData [][]string
-	err := dbManager.redis.GetCachedData(cachedQuery, &cachedData)
-	if err == nil {
-		fmt.Println("данные есть в кеше", cachedQuery, cachedData)
-		//log.Fatal("данные есть в кеше", cachedQuery)
-		return cachedData, nil
-	}
-	fmt.Println("данных нет в кеше", cachedQuery)
+	// cachedQuery := fmt.Sprintf(query, queryArgs)
+	// var cachedData [][]string
+	// err := dbManager.redis.GetCachedData(cachedQuery, &cachedData)
+	// if err == nil {
+	// 	fmt.Println("данные есть в кеше", cachedQuery, cachedData)
+	// 	//log.Fatal("данные есть в кеше", cachedQuery)
+	// 	return cachedData, nil
+	// }
+	// fmt.Println("данных нет в кеше", cachedQuery)
 	//log.Fatal("данных нет в кеше", cachedQuery)
 
 	// Выполняем подготовленный запрос
@@ -116,12 +115,12 @@ func (dbManager *databaseManager) GetRows(tableName string, params []string, arg
 		return nil, err
 	}
 
-	err = dbManager.redis.CacheData(cachedQuery, result, 10*time.Minute)
-	if err != nil {
+	// err = dbManager.redis.CacheData(cachedQuery, result, 10*time.Minute)
+	// if err != nil {
 
-		fmt.Printf("Ошибка при кэшировании данных: %v/n", err)
-		log.Fatalf("Ошибка при кэшировании данных: %v", err)
-	}
+	// 	fmt.Printf("Ошибка при кэшировании данных: %v/n", err)
+	// 	log.Fatalf("Ошибка при кэшировании данных: %v", err)
+	// }
 
 	return result, nil
 }

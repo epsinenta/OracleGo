@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>Register</title>
+		<link rel="stylesheet" href="/static/style.css" />
+	</head>
+	<body>
+		<main>
+			<section class="form-container">
+				<form action="/profile-complete?action=resend" method="POST">
+					<button type="submit" class="btn-submit">Resend email</button>
+				</form>
+
+				<form action="/profile-complete?action=logout" method="POST">
+					<button type="submit" class="btn-submit">Logout</button>
+				</form>
+				{{if .ErrorMessage}}
+				<div class="error-message">{{.ErrorMessage}}</div>
+				{{end}}
+			</section>
+		</main>
+	</body>
+</html>

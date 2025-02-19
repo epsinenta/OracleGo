@@ -2,13 +2,12 @@ package services
 
 import (
 	"OracleGo/internal/db"
-	"OracleGo/internal/interfaces"
 	"OracleGo/internal/redis"
 	"OracleGo/internal/repository"
 	"testing"
 )
 
-func SetupTests(t *testing.T) interfaces.ServicesManager {
+func SetupTests(t *testing.T) *ServicesManager {
 	db, err := db.NewDatabaseManager()
 	if err != nil {
 		t.Fatal(err)
@@ -31,7 +30,10 @@ func SetupTests(t *testing.T) interfaces.ServicesManager {
 
 	repo := repository.NewRepositoryManager(db, redis)
 
-	svc := NewServiceManager(repo)
+	svc, err := NewServiceManager(repo, redis)
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	return svc
 }

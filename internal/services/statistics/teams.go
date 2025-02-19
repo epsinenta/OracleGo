@@ -1,4 +1,4 @@
-package services
+package statistics
 
 import (
 	"OracleGo/internal/entities"
@@ -7,7 +7,7 @@ import (
 	_ "github.com/lib/pq"
 )
 
-func (sm *servicesManager) GetTeamsList() ([]entities.Team, error) {
+func (sm *StatisticsManager) GetTeamsList() ([]entities.Team, error) {
 	teamsRows, err := sm.repo.GetRows("teams_roasters", []string{"team_name"}, map[string][]string{})
 	if err != nil {
 		return nil, fmt.Errorf("не удалось провести запрос: %w", err)
@@ -20,7 +20,7 @@ func (sm *servicesManager) GetTeamsList() ([]entities.Team, error) {
 	return result, nil
 }
 
-func (sm *servicesManager) GetTeamsRoastersList() ([]entities.TeamRoaster, error) {
+func (sm *StatisticsManager) GetTeamsRoastersList() ([]entities.TeamRoaster, error) {
 	teamsRows, err := sm.repo.GetRows("teams_roasters", []string{"*"}, map[string][]string{})
 	if err != nil {
 		return nil, fmt.Errorf("не удалось провести запрос: %w", err)

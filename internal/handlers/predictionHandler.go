@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"OracleGo/internal/entities"
-	"OracleGo/internal/net"
 	"OracleGo/internal/utils"
 	"encoding/json"
 	"fmt"
@@ -25,7 +24,7 @@ func (hm *HandlersManager) PredictionHandler(w http.ResponseWriter, r *http.Requ
 		team2 := r.FormValue("team2")
 
 		var team1Players, team2Players []string
-		teamRosters, err := hm.servicesManager.GetTeamsRoastersList()
+		teamRosters, err := hm.servicesManager.Statistics.GetTeamsRoastersList()
 		if err != nil {
 			http.Error(w, "Failed to get teams rosters list", http.StatusInternalServerError)
 			return
@@ -74,7 +73,7 @@ func (hm *HandlersManager) PredictionHandler(w http.ResponseWriter, r *http.Requ
 		for _, heroName := range allHeroes {
 			heroes = append(heroes, entities.Hero{Value: heroName})
 		}
-		heroWinrates, err := hm.servicesManager.GetHeroesWinrates(heroes)
+		heroWinrates, err := hm.servicesManager.Statistics.GetHeroesWinrates(heroes)
 		if err != nil {
 			http.Error(w, "Failed to get heroes winrates", http.StatusInternalServerError)
 			return
@@ -87,7 +86,7 @@ func (hm *HandlersManager) PredictionHandler(w http.ResponseWriter, r *http.Requ
 		for _, name := range team2Heroes {
 			team2HeroObjs = append(team2HeroObjs, entities.Hero{Value: name})
 		}
-		heroCounterPicks, err := hm.servicesManager.GetHeroesCounterPicks(team1HeroObjs, team2HeroObjs)
+		heroCounterPicks, err := hm.servicesManager.Statistics.GetHeroesCounterPicks(team1HeroObjs, team2HeroObjs)
 		if err != nil {
 			http.Error(w, "Failed to get heroes counter picks", http.StatusInternalServerError)
 			return
@@ -104,13 +103,13 @@ func (hm *HandlersManager) PredictionHandler(w http.ResponseWriter, r *http.Requ
 		// 	return
 		// }
 
-		playerOnHeroWinrates, err := hm.servicesManager.GetPlayerOnHeroWinrate(players, heroes)
+		playerOnHeroWinrates, err := hm.servicesManager.Statistics.GetPlayerOnHeroWinrate(players, heroes)
 		if err != nil {
 			http.Error(w, "Failed to get player winrates on heroes", http.StatusInternalServerError)
 			return
 		}
 
-		playerGameCounts, err := hm.servicesManager.GetPlayerCountOnHero(players, heroes)
+		playerGameCounts, err := hm.servicesManager.Statistics.GetPlayerCountOnHero(players, heroes)
 		if err != nil {
 			http.Error(w, "Failed to get player game counts on heroes", http.StatusInternalServerError)
 			return
@@ -289,12 +288,25 @@ func (hm *HandlersManager) PredictionHandler(w http.ResponseWriter, r *http.Requ
 
 	}
 
-	if teams, err := hm.servicesManager.GetTeamsList(); err == nil {
+	if teams, err := hm.servicesManager.Statistics.GetTeamsList(); err == nil {
 		data["Team"] = teams
 	}
-	if heroList, err := hm.servicesManager.GetHeroesNameList(); err == nil {
+	if heroList, err := hm.servicesManager.Statistics.GetHeroesNameList(); err == nil {
 		data["Hero"] = heroList
 	}
 
-	net.RenderTemplate(w, r, "prediction.html", data)
+	isLoggedIn, err := getBoolFromContext(r, entities.AuthStatusContextKey{})
+	if err != nil {
+		hm.logger.Log(err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	data[entities.IsLoggedInKey] = isLoggedIn
+
+	if err := hm.templates.ExecuteTemplate(w, "prediction.html", data); err != nil {
+		hm.logger.Log(err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 }

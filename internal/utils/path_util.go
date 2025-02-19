@@ -5,6 +5,7 @@ import (
 	"strings"
 )
 
+// надо доработать
 func GetPath(relativePath string) (string, error) {
 	wd, err := os.Getwd()
 	if err != nil {

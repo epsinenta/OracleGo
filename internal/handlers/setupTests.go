@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"OracleGo/internal/db"
-	"OracleGo/internal/entities"
 	"OracleGo/internal/log"
 	"OracleGo/internal/redis"
 	"OracleGo/internal/repository"
@@ -35,12 +34,15 @@ func SetupTests(t *testing.T, setupUser bool) *HandlersManager {
 
 	repo := repository.NewRepositoryManager(db, redis)
 
-	svc := services.NewServiceManager(repo)
-
-	hm := NewHandlerManager(svc, logger)
-
-	if setupUser {
-		svc.AddUsers([]entities.Email{{Value: "test@example.com"}}, []entities.Password{{Value: "password"}})
+	svc, err := services.NewServiceManager(repo, redis)
+	if err != nil {
+		t.Fatal(err)
 	}
+
+	hm, err := NewHandlerManager(svc, logger)
+	if err != nil {
+		t.Fatal(err)
+	}
+
 	return hm
 }

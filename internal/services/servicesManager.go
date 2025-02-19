@@ -1,11 +1,21 @@
 package services
 
-import "OracleGo/internal/interfaces"
+import (
+	"OracleGo/internal/interfaces"
+	"OracleGo/internal/services/statistics"
+	"OracleGo/internal/services/users"
+)
 
-type servicesManager struct {
-	repo interfaces.RepositoryManager
+type ServicesManager struct {
+	repo  interfaces.RepositoryManager
+	cache interfaces.RedisManager
+
+	Statistics *statistics.StatisticsManager
+	Users      *users.UsersManager
 }
 
-func NewServiceManager(repo interfaces.RepositoryManager) interfaces.ServicesManager {
-	return &servicesManager{repo: repo}
+func NewServiceManager(repo interfaces.RepositoryManager, cache interfaces.RedisManager) (*ServicesManager, error) {
+	statistics := statistics.NewStatisticsManager(repo)
+	users := users.NewUsersManager(repo, cache)
+	return &ServicesManager{repo: repo, cache: cache, Statistics: statistics, Users: users}, nil
 }

@@ -9,6 +9,7 @@ import (
 type RedisManager interface {
 	CacheData(key string, value interface{}, expiration time.Duration) error
 	GetCachedData(key string, dest interface{}) error
+	DeleteCachedData(keys []string) error
 	Ping() error
 	GratefulStop() error
 }
@@ -26,8 +27,11 @@ type RepositoryManager interface {
 	GetRows(tableName string, params []string, args map[string][]string) ([][]string, error)
 }
 
+// unused
 type ServicesManager interface {
-	AddUsers(emails []entities.Email, passwords []entities.Password) error
+	AddUsers(emails []string, passwords []string) error
+	GetUser(email string) (entities.User, error)
+
 	GetAllHeroesWinrates() ([]entities.Winrate, error)
 	GetHeroesCounterPicks(firstHeroes []entities.Hero, secondHeroes []entities.Hero) ([]entities.CounterRate, error)
 	GetHeroesNameList() ([]entities.Hero, error)
@@ -38,5 +42,15 @@ type ServicesManager interface {
 	GetPlayersWinrate(players []entities.Player) ([]entities.PlayerWinrateCurPatch, error)
 	GetTeamsList() ([]entities.Team, error)
 	GetTeamsRoastersList() ([]entities.TeamRoaster, error)
-	GetUser(email entities.Email) (entities.User, error)
+
+	RefreshAccessToken(refreshToken string) (string, *entities.Claims, error)
+	ValidateAccessToken(token string) (*entities.Claims, error)
+	ValidateRefreshToken(token string) (*entities.Claims, error)
+	CreateAccessToken(user entities.User) (string, error)
+	CreateRefreshToken(user entities.User) (string, error)
+
+	IsUserOnEmailConfirmation(email string) error
+	CacheUnconfirmedUser(confirmationId string, user entities.User) error
+	SendConfirmationMessage(confirmationId string, email string) error
+	GetCachedUnconfirmedUser(confirmationId string) (entities.User, error)
 }

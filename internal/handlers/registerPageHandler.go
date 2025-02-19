@@ -2,52 +2,93 @@ package handlers
 
 import (
 	"OracleGo/internal/entities"
-	"OracleGo/internal/net"
-	"database/sql"
 	_ "fmt"
+	"net"
 	"net/http"
+	"strings"
 
 	"github.com/pkg/errors"
-	"golang.org/x/crypto/bcrypt"
 )
 
 func (hm *HandlersManager) RegisterHandler(w http.ResponseWriter, r *http.Request) {
 	data := map[string]interface{}{}
 
-	if r.Method == http.MethodPost {
-		email := r.FormValue("email")
-		inputPassword := r.FormValue("password")
-		confirmPassword := r.FormValue("confirm-password")
+	isLoggedIn, err := getBoolFromContext(r, entities.AuthStatusContextKey{})
+	if err != nil {
+		hm.logger.Log(err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 
-		if inputPassword != confirmPassword {
-			data["ErrorMessage"] = "passwords don't match"
-		} else {
-			hashedPass, err := bcrypt.GenerateFromPassword([]byte(inputPassword), bcrypt.DefaultCost)
-			if err != nil {
-				http.Error(w, err.Error(), http.StatusInternalServerError)
-				hm.logger.Log(err)
-				return
-			}
+	isInRegistration, err := getBoolFromContext(r, entities.RegistrationStatusContextKey{})
+	if err != nil {
+		hm.logger.Log(err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 
-			_, err = hm.servicesManager.GetUser(entities.Email{Value: email})
-			if err != nil {
-				if errors.Cause(err) == sql.ErrNoRows {
-					err = hm.servicesManager.AddUsers([]entities.Email{{Value: email}}, []entities.Password{{Value: string(hashedPass)}})
-					if err != nil {
+	if isInRegistration {
+		http.Redirect(w, r, "/profile-complete", http.StatusSeeOther)
+		return
+	}
+
+	data[entities.IsLoggedInKey] = isLoggedIn
+	if !isLoggedIn {
+		if r.Method == http.MethodPost {
+			email := r.FormValue("email")
+			inputPassword := r.FormValue("password")
+			confirmPassword := r.FormValue("confirm-password")
+
+			if !hasMXRecord(email) {
+				data[entities.ErrorMessageKey] = "wrong email"
+			} else if inputPassword != confirmPassword {
+				data[entities.ErrorMessageKey] = "passwords don't match"
+			} else {
+				sessionId, err := hm.servicesManager.Users.StartRegistration(entities.User{Email: email, Password: inputPassword})
+				if err != nil {
+					switch errors.Cause(err) {
+					case entities.AlreadyRegisteredError:
+						data[entities.ErrorMessageKey] = "you are already registered"
+					case entities.SessionAlreadyStartedError:
+						http.Redirect(w, r, "/profile-complete", http.StatusSeeOther)
+						return
+					default:
 						http.Error(w, err.Error(), http.StatusInternalServerError)
 						hm.logger.Log(err)
 						return
 					}
 				} else {
-					http.Error(w, err.Error(), http.StatusInternalServerError)
-					hm.logger.Log(err)
+					http.SetCookie(w, &http.Cookie{
+						Name:     entities.RegistrationCookieName,
+						Value:    sessionId,
+						HttpOnly: true,
+						Secure:   false, //поменять
+						SameSite: http.SameSiteStrictMode,
+						Path:     "/",
+					})
+
+					http.Redirect(w, r, "/profile-complete", http.StatusSeeOther)
 					return
 				}
 			}
-
-			data["ErrorMessage"] = "you are already registered"
 		}
+	} else {
+		http.Redirect(w, r, "/profile", http.StatusSeeOther)
+		return
 	}
 
-	net.RenderTemplate(w, r, "register.html", data)
+	if err := hm.templates.ExecuteTemplate(w, "register.html", data); err != nil {
+		hm.logger.Log(err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+}
+
+func hasMXRecord(email string) bool {
+	parts := strings.Split(email, "@")
+	if len(parts) != 2 {
+		return false
+	}
+	mxRecords, err := net.LookupMX(parts[1])
+	return err == nil && len(mxRecords) > 0
 }

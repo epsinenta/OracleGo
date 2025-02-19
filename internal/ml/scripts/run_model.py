@@ -23,21 +23,17 @@ def main():
     np.random.seed(RANDOM_STATE)
     torch.set_num_threads(N_THREADS)
     
-    print("я сосал")
-
     try:
     # Load model
         with open("internal/ml/models/model.pkl", "rb") as file:
             model = pickle.load(file)
     except Exception as e:
         print(e)
-
-    print("я сосал")
+ 
     # Load data row
     with open("internal/ml/scripts/row.txt", "r") as file:
         data = file.readline().strip()
     
-    print("я сосал")
     # Prepare DataFrame
     df = pd.read_csv(io.StringIO(data), header=None)
     missing_values = [1, 2041, 7.31]
@@ -45,14 +41,12 @@ def main():
     df = pd.concat([missing_df, df], axis=1).reset_index(drop=True)
     df.columns = pd.Index([str(i) for i in range(1, 91)])
     
-    print("я сосал")
     # Predict
     try:
         result = model.predict(df)
     except Exception as e:
         print(e)
-    print(result)
-    print("я сосал")
+    print(result) 
     
     # Extract prediction
     prediction = bool(result.data[0][0] > 0.5)

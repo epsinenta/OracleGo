@@ -2,9 +2,7 @@ package handlers
 
 import (
 	"OracleGo/internal/entities"
-	"OracleGo/internal/net"
 	"database/sql"
-	_ "fmt"
 	"net/http"
 
 	"github.com/pkg/errors"
@@ -14,38 +12,63 @@ import (
 func (hm *HandlersManager) LoginHandler(w http.ResponseWriter, r *http.Request) {
 	data := map[string]interface{}{}
 
-	if r.Method == http.MethodPost {
-		email := r.FormValue("email")
-		inputPassword := r.FormValue("password")
-
-		user, err := hm.servicesManager.GetUser(entities.Email{Value: email})
-		if err != nil {
-			if errors.Cause(err) == sql.ErrNoRows {
-				data["ErrorMessage"] = "Incorrect email or password"
-				return
-			} else {
-				http.Error(w, err.Error(), http.StatusInternalServerError)
-				hm.logger.Log(err)
-				return
-			}
-		}
-
-		err = bcrypt.CompareHashAndPassword([]byte(user.Password.Value), []byte(inputPassword))
-		if err != nil {
-			data["ErrorMessage"] = "Incorrect email or password"
-			return
-		} else {
-			err = net.SaveSession(w, r, email)
-			if err == nil {
-				http.Redirect(w, r, "/profile", http.StatusSeeOther)
-				return
-			} else {
-				http.Error(w, err.Error(), http.StatusInternalServerError)
-				hm.logger.Log(err)
-				return
-			}
-		}
+	isLoggedIn, err := getBoolFromContext(r, entities.AuthStatusContextKey{})
+	if err != nil {
+		hm.logger.Log(err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
 	}
 
-	net.RenderTemplate(w, r, "login.html", data)
+	isInRegistration, err := getBoolFromContext(r, entities.RegistrationStatusContextKey{})
+	if err != nil {
+		hm.logger.Log(err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	if isInRegistration {
+		http.Redirect(w, r, "/profile-complete", http.StatusSeeOther)
+		return
+	}
+
+	data[entities.IsLoggedInKey] = isLoggedIn
+	if !isLoggedIn {
+		if r.Method == http.MethodPost {
+			inputEmail := r.FormValue("email")
+			inputPassword := r.FormValue("password")
+
+			token, err := hm.servicesManager.Users.Login(entities.User{Email: inputEmail, Password: inputPassword})
+			if err != nil {
+				switch errors.Cause(err) {
+				case sql.ErrNoRows, bcrypt.ErrMismatchedHashAndPassword:
+					data[entities.ErrorMessageKey] = "incorrect email or password"
+				default:
+					http.Error(w, err.Error(), http.StatusInternalServerError)
+					hm.logger.Log(err)
+					return
+				}
+			}
+
+			http.SetCookie(w, &http.Cookie{
+				Name:     entities.RefreshTokenCookieName,
+				Value:    token,
+				HttpOnly: true,
+				Secure:   false, //поменять
+				SameSite: http.SameSiteStrictMode,
+				Path:     "/",
+			})
+
+			http.Redirect(w, r, "/profile", http.StatusSeeOther)
+			return
+		}
+	} else {
+		http.Redirect(w, r, "/profile", http.StatusSeeOther)
+		return
+	}
+
+	if err := hm.templates.ExecuteTemplate(w, "login.html", data); err != nil {
+		hm.logger.Log(err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 }

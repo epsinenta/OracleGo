@@ -55,7 +55,7 @@ func (r *redisManager) Ping() error {
 	return err
 }
 
-// CacheData - функция для кэширования данных
+// CacheData - функция для кэширования данных || json!!!
 func (r *redisManager) CacheData(key string, value interface{}, expiration time.Duration) error {
 	data, err := json.Marshal(value)
 	if err != nil {
@@ -70,21 +70,25 @@ func (r *redisManager) CacheData(key string, value interface{}, expiration time.
 	return nil
 }
 
-// GetCachedData - функция для получения кэшированных данных
+// GetCachedData - функция для получения кэшированных данных || json!!
 func (r *redisManager) GetCachedData(key string, dest interface{}) error {
 	data, err := r.redisClient.Get(r.ctx, key).Result()
-	if err == redis.Nil {
-		return fmt.Errorf("данные по ключу '%s' не найдены", key)
-	} else if err != nil {
-		return fmt.Errorf("ошибка при получении данных из Redis: %v", err)
+	if err != nil {
+		return errors.Wrap(err, "getting data from redis")
 	}
 
-	err = json.Unmarshal([]byte(data), dest)
-	if err != nil {
-		return fmt.Errorf("ошибка при десериализации данных: %v", err)
+	if dest != nil {
+		err = json.Unmarshal([]byte(data), dest)
+		if err != nil {
+			return errors.Wrap(err, "unmarshaling json")
+		}
 	}
 
 	return nil
+}
+
+func (r *redisManager) DeleteCachedData(keys []string) error {
+	return errors.Wrap(r.redisClient.Del(r.ctx, keys...).Err(), "deleting from redis")
 }
 
 func (r *redisManager) GratefulStop() error {

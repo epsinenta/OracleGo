@@ -1,4 +1,4 @@
-package services
+package statistics
 
 import (
 	"OracleGo/internal/entities"
@@ -9,7 +9,7 @@ import (
 	_ "github.com/lib/pq"
 )
 
-func (sm *servicesManager) GetPlayerOnHeroWinrate(players []entities.Player, heroes []entities.Hero) ([]entities.PlayerWinrate, error) {
+func (sm *StatisticsManager) GetPlayerOnHeroWinrate(players []entities.Player, heroes []entities.Hero) ([]entities.PlayerWinrate, error) {
 	playerNames := repository.ValuesFromAny(players)
 	heroesNames := repository.ValuesFromAny(heroes)
 	winrateRows, err := sm.repo.GetRows("players_heroes_statistic", []string{"winrate", "player_name", "hero_name"}, map[string][]string{"player_name": playerNames, "hero_name": heroesNames})
@@ -29,7 +29,7 @@ func (sm *servicesManager) GetPlayerOnHeroWinrate(players []entities.Player, her
 	return result, nil
 }
 
-func (sm *servicesManager) GetPlayersWinrate(players []entities.Player) ([]entities.PlayerWinrateCurPatch, error) {
+func (sm *StatisticsManager) GetPlayersWinrate(players []entities.Player) ([]entities.PlayerWinrateCurPatch, error) {
 	playerNames := repository.ValuesFromAny(players)
 	winrateRows, err := sm.repo.GetRows("pro_players_list", []string{"winrate", "player_name"}, map[string][]string{"player_name": playerNames, "patch": {"7.35c"}})
 	if err != nil {
@@ -48,7 +48,7 @@ func (sm *servicesManager) GetPlayersWinrate(players []entities.Player) ([]entit
 	return result, nil
 }
 
-func (sm *servicesManager) GetPlayerCountOnHero(players []entities.Player, heroes []entities.Hero) ([]entities.GamesCount, error) {
+func (sm *StatisticsManager) GetPlayerCountOnHero(players []entities.Player, heroes []entities.Hero) ([]entities.GamesCount, error) {
 	playerNames := repository.ValuesFromAny(players)
 	heroesNames := repository.ValuesFromAny(heroes)
 	winrateRows, err := sm.repo.GetRows("players_heroes_statistic", []string{"count_of_matches", "player_name", "hero_name"}, map[string][]string{"player_name": playerNames, "hero_name": heroesNames})

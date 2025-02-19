@@ -1,19 +1,33 @@
 package handlers
 
 import (
-	"OracleGo/internal/net"
+	"OracleGo/internal/entities"
 	_ "fmt"
 	"net/http"
 )
 
 func (hm *HandlersManager) TeamsHandler(w http.ResponseWriter, r *http.Request) {
 	data := map[string]interface{}{}
-	roasters, err := hm.servicesManager.GetTeamsRoastersList()
+	roasters, err := hm.servicesManager.Statistics.GetTeamsRoastersList()
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		hm.logger.Log(err)
 		return
 	}
 	data["TeamsRoasters"] = roasters
-	net.RenderTemplate(w, r, "teams.html", data)
+
+	isLoggedIn, err := getBoolFromContext(r, entities.AuthStatusContextKey{})
+	if err != nil {
+		hm.logger.Log(err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	data[entities.IsLoggedInKey] = isLoggedIn
+
+	if err := hm.templates.ExecuteTemplate(w, "teams.html", data); err != nil {
+		hm.logger.Log(err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 }
